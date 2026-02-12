@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import requests  # 用于拉取远程规则文件
+import requests  # 用于拉取远程 AGH 规则文件
 import re        # 用于验证域名合法性
 from datetime import datetime, timedelta  # 用于生成北京时间统计
 
@@ -9,7 +9,7 @@ from datetime import datetime, timedelta  # 用于生成北京时间统计
 # 你的 AGH 原始规则源地址
 AGH_SOURCE_URL = "https://ddcm1349.github.io/AGH/adguard_rules.txt"
 
-# 按照你的要求设定的黑白名单文件名
+# 按照你的要求设定的文件名
 BLACKLIST_FILE = "Loon_黑名单.txt"
 WHITELIST_FILE = "Loon_白名单.txt"
 
@@ -20,7 +20,8 @@ def get_beijing_time():
 def extract_domain(line):
     """
     分拣提取逻辑：
-    从 AGH 语法中识别出域名，并区分黑白名单
+    从 AGH 语法中识别出域名，并区分黑白名单。
+    强制过滤掉正则、IP 和复杂修饰符。
     """
     line = line.strip()
     
@@ -50,7 +51,7 @@ def extract_domain(line):
                 temp_line = p
                 break
     
-    # 5. 纯净化处理：去掉左侧前导点、转小写、移除端口号和多余符号
+    # 5. 纯净化处理：去掉左侧前导点、转小写、移除端口号
     domain = temp_line.lstrip('.').lower().split(':')[0].split('^')[0]
 
     # 6. 合法性检查：确保是合规的域名格式，且排除纯 IP 地址
@@ -61,18 +62,24 @@ def extract_domain(line):
     return None, None
 
 def save_to_file(filename, title, domains):
-    """将提取到的列表保存为文件，并写入详细的统计报表头"""
+    """
+    将提取到的列表保存为文件：
+    1. 写入详细报表头
+    2. 在每个域名前面强制加上 . 前缀，确保 Loon 识别为后缀匹配
+    """
     beijing_time = get_beijing_time()
     header = [
         f"# {title}",
         f"# 生成时间: {beijing_time} (北京时间)",
         f"# 提取总数: {len(domains)} 条",
+        f"# 匹配模式: 强制前缀点 (DOMAIN-SUFFIX 兼容模式)",
         f"# 来源地址: {AGH_SOURCE_URL}",
         "#" + "="*65 + "\n"
     ]
     with open(filename, 'w', encoding='utf-8') as f:
         f.write('\n'.join(header))  # 写入统计头
-        f.write('\n'.join(sorted(domains)))  # 写入排序后的纯域名列表
+        # 核心修改：在每个域名前面拼上一个点 .
+        f.write('\n'.join([f".{d}" for d in sorted(domains)]))
 
 def main():
     """主程序逻辑"""
@@ -103,12 +110,12 @@ def main():
     white_list = list(dict.fromkeys(white_list))
 
     # 执行保存操作
-    save_to_file(BLACKLIST_FILE, "Loon 域名黑名单 (BLACKLIST)", black_list)
-    save_to_file(WHITELIST_FILE, "Loon 域名白名单 (WHITELIST)", white_list)
+    save_to_file(BLACKLIST_FILE, "Loon 域名黑名单 (强制后缀匹配)", black_list)
+    save_to_file(WHITELIST_FILE, "Loon 域名白名单 (强制后缀匹配)", white_list)
 
     print(f"✅ 处理完成！")
-    print(f"📊 黑名单: {len(black_list)} 条 -> {BLACKLIST_FILE}")
-    print(f"📊 白名单: {len(white_list)} 条 -> {WHITELIST_FILE}")
+    print(f"📊 黑名单: {len(black_list)} 条 (已加点)")
+    print(f"📊 白名单: {len(white_list)} 条 (已加点)")
 
 if __name__ == "__main__":
     main()
