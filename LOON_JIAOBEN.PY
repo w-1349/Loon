@@ -1,157 +1,114 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Loon 域名集合自动化合并工具 - 纯净域名版
-✅ 移除前缀点，保持文件清爽
-📊 包含：原始统计、有效提取、源内去重、子域压缩、跨源去重
-"""
 
-import requests
-import re
-from datetime import datetime, timedelta
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+import requests  # 用于拉取远程规则文件
+import re        # 用于验证域名合法性
+from datetime import datetime, timedelta  # 用于生成北京时间统计
 
 # —— 核心配置区 ——
-RULE_SOURCES = [
-    {"name": "AdRules", "url": "https://adrules.top/adrules.list"},
-    {"name": "anti-ad", "url": "https://anti-ad.net/surge2.txt"}
-]
-OUTPUT_FILE = "Loon_rules.txt"
-# 自动适配你的仓库地址
-SUBSCRIBE_URL = "https://raw.githubusercontent.com/ddcm1349/Loon/main/Loon_rules.txt"
+# 你的 AGH 原始规则源地址
+AGH_SOURCE_URL = "https://ddcm1349.github.io/AGH/adguard_rules.txt"
 
-def create_retry_session():
-    """创建稳定请求会话，防止拉取时网络波动"""
-    session = requests.Session()
-    retry = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
-    session.mount("https://", HTTPAdapter(max_retries=retry))
-    return session
+# 按照你的要求设定的黑白名单文件名
+BLACKLIST_FILE = "Loon_黑名单.txt"
+WHITELIST_FILE = "Loon_白名单.txt"
 
-def clean_domain(line):
+def get_beijing_time():
+    """获取并格式化当前的北京时间"""
+    return (datetime.utcnow() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
+
+def extract_domain(line):
     """
-    通用清洗逻辑：
-    从 DOMAIN, / DOMAIN-SUFFIX, / || / . 中精准抠出域名主体
+    分拣提取逻辑：
+    从 AGH 语法中识别出域名，并区分黑白名单
     """
     line = line.strip()
-    if not line or line.startswith(('#', '!', '[')): 
-        return None
+    
+    # 1. 基础过滤：跳过空行、注释(! #)、规则集标记([)、正则(/)以及带$的复杂修饰符
+    if not line or line.startswith(('!', '#', '[')) or '/' in line or '$' in line:
+        return None, None
 
-    # 1. 处理逗号分隔格式 (针对 AdRules 的 DOMAIN/DOMAIN-SUFFIX)
-    if ',' in line:
-        parts = line.split(',')
+    is_whitelist = False
+    temp_line = line
+
+    # 2. 识别白名单：若以 @@ 开头则标记为白名单，并剥离符号
+    if temp_line.startswith('@@'):
+        is_whitelist = True
+        temp_line = temp_line[2:]
+
+    # 3. 处理 AGH 标志性的 || 前缀，并截断结尾的分隔符 ^
+    if temp_line.startswith('||'):
+        temp_line = temp_line[2:].split('^')[0]
+    
+    # 4. 兼容处理：针对包含 DOMAIN, 或 DOMAIN-SUFFIX, 的行
+    elif ',' in temp_line:
+        parts = temp_line.split(',')
         for part in parts:
             p = part.strip()
-            # 包含点且不是指令（全大写）则为域名
-            if '.' in p and not p.isupper() and not p.startswith('/'):
-                line = p
+            # 包含点且不是全大写指令（如 REJECT）则认定为域名
+            if '.' in p and not p.isupper():
+                temp_line = p
                 break
     
-    # 2. 移除常见的 Adblock 语法和前缀符号
-    if line.startswith('||'):
-        line = line[2:].split('^')[0]
-    
-    # 3. 统一去除前缀点，并全部转为小写
-    line = line.lstrip('.').lower().split('/')[0].split('^')[0]
-    
-    # 4. 合法性正则验证
-    if '.' in line and re.match(r'^[a-z0-9\-\.]+$', line):
-        return line
-    return None
+    # 5. 纯净化处理：去掉左侧前导点、转小写、移除端口号和多余符号
+    domain = temp_line.lstrip('.').lower().split(':')[0].split('^')[0]
 
-def compress_domains(domain_list):
-    """
-    子域名冗余压缩逻辑：
-    即使输出不带点，逻辑依然保留：有 google.com 就不留 ads.google.com
-    """
-    sorted_domains = sorted(list(domain_list), key=len)
-    final_list = []
-    redundant_count = 0
-    for domain in sorted_domains:
-        is_redundant = False
-        for root in final_list:
-            if domain.endswith('.' + root) or domain == root:
-                is_redundant = True
-                redundant_count += 1
-                break
-        if not is_redundant:
-            final_list.append(domain)
-    return final_list, redundant_count
+    # 6. 合法性检查：确保是合规的域名格式，且排除纯 IP 地址
+    if '.' in domain and re.match(r'^[a-z0-9\-\.]+$', domain):
+        if not domain.split('.')[-1].isdigit():
+            return domain, is_whitelist
+    
+    return None, None
+
+def save_to_file(filename, title, domains):
+    """将提取到的列表保存为文件，并写入详细的统计报表头"""
+    beijing_time = get_beijing_time()
+    header = [
+        f"# {title}",
+        f"# 生成时间: {beijing_time} (北京时间)",
+        f"# 提取总数: {len(domains)} 条",
+        f"# 来源地址: {AGH_SOURCE_URL}",
+        "#" + "="*65 + "\n"
+    ]
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(header))  # 写入统计头
+        f.write('\n'.join(sorted(domains)))  # 写入排序后的纯域名列表
 
 def main():
-    session = create_retry_session()
-    source_stats = []
-    all_valid_domains = []
-    global_raw_total = 0
-
-    print("="*50 + "\n🚀 开始执行 Loon 规则纯净版合并\n" + "="*50)
-
-    for src in RULE_SOURCES:
-        try:
-            print(f"📥 正在拉取【{src['name']}】...")
-            resp = session.get(src['url'], timeout=30)
-            lines = resp.text.splitlines()
-            
-            raw_count = len(lines)
-            valid_list = [d for d in (clean_domain(l) for l in lines) if d]
-            
-            # 源内去重统计
-            unique_src = list(dict.fromkeys(valid_list))
-            inner_dedup = len(valid_list) - len(unique_src)
-            
-            source_stats.append({
-                "name": src['name'],
-                "url": src['url'],
-                "raw": raw_count,
-                "valid": len(valid_list),
-                "unique": len(unique_src),
-                "inner_dedup": inner_dedup
-            })
-            
-            all_valid_domains.extend(unique_src)
-            global_raw_total += raw_count
-            print(f"✅ 【{src['name']}】已提取: {len(unique_src)} 条有效域名")
-
-        except Exception as e:
-            print(f"❌ 【{src['name']}】拉取失败: {e}")
-
-    # 全局去重与冗余压缩
-    unique_global = list(dict.fromkeys(all_valid_domains))
-    cross_dedup = len(all_valid_domains) - len(unique_global)
-    final_domains, compressed_count = compress_domains(unique_global)
+    """主程序逻辑"""
+    print(f"🚀 正在拉取源文件: {AGH_SOURCE_URL}")
     
-    # 北京时间获取
-    beijing_time = (datetime.utcnow() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        resp = requests.get(AGH_SOURCE_URL, timeout=30)
+        resp.raise_for_status()
+        lines = resp.text.splitlines()
+    except Exception as e:
+        print(f"❌ 拉取失败: {e}")
+        return
 
-    # —— 构建详细报表头 ——
-    header = [
-        f"# Loon 域名集合 (DOMAIN-SET) 纯净合并版",
-        f"# 生成时间 (北京时间) : {beijing_time}",
-        f"# 规则源地址:",
-    ]
-    for i, s in enumerate(source_stats, 1):
-        header.append(f"#   {i}. {s['name']} 规则: {s['url']}")
-    header.append(f"#   本规则订阅地址: {SUBSCRIBE_URL}")
-    header.append("# " + "="*72)
-    
-    header.append("# 【各规则源单独统计】")
-    for i, s in enumerate(source_stats, 1):
-        header.append(f"#   {i}. {s['name']} | 原始行: {s['raw']} | 有效提取: {s['valid']} | 源内去重: {s['inner_dedup']}")
-    header.append("# " + "="*72)
+    black_list = []  # 黑名单临时容器
+    white_list = []  # 白名单临时容器
 
-    header.append("# 【全局合并统计】")
-    header.append(f"# 原始总行数汇总: {global_raw_total} 条")
-    header.append(f"# 跨源重复去重数: {cross_dedup} 条 | 子域冗余压缩数: {compressed_count} 条")
-    header.append(f"# 最终全局保留总数: {len(final_domains)} 条")
-    header.append("# " + "="*72 + "\n")
+    # 遍历原始规则进行分拣
+    for line in lines:
+        domain, is_white = extract_domain(line)
+        if domain:
+            if is_white:
+                white_list.append(domain)
+            else:
+                black_list.append(domain)
 
-    # —— 写入文件：不再添加前缀点 ——
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(header))
-        # 直接按字母排序写入纯域名
-        f.write('\n'.join(sorted(final_domains)))
+    # 确保最终结果去重（集合去重）
+    black_list = list(dict.fromkeys(black_list))
+    white_list = list(dict.fromkeys(white_list))
 
-    print(f"\n📊 任务圆满完成！最终生成规则: {len(final_domains)} 条")
+    # 执行保存操作
+    save_to_file(BLACKLIST_FILE, "Loon 域名黑名单 (BLACKLIST)", black_list)
+    save_to_file(WHITELIST_FILE, "Loon 域名白名单 (WHITELIST)", white_list)
+
+    print(f"✅ 处理完成！")
+    print(f"📊 黑名单: {len(black_list)} 条 -> {BLACKLIST_FILE}")
+    print(f"📊 白名单: {len(white_list)} 条 -> {WHITELIST_FILE}")
 
 if __name__ == "__main__":
     main()
