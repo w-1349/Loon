@@ -1,0 +1,45 @@
+name: Loon_定时更新  # 自动化任务的名字
+
+on:
+  schedule:  # 定义定时触发
+    # 定时设置：分钟 小时 日 月 星期 (UTC时间)
+    - cron: '49 5 * * *'   # UTC 5:49 = 北京时间 13:49
+    - cron: '49 11 * * *'  # UTC 11:49 = 北京时间 19:49
+    - cron: '49 17 * * *'  # UTC 17:49 = 北京时间 次日 01:49
+    - cron: '49 23 * * *'  # UTC 23:49 = 北京时间 次日 07:49
+  workflow_dispatch:  # 允许你在 GitHub 页面上点击按钮手动运行
+
+permissions:  # 赋予脚本权限
+  contents: write  # 允许脚本修改仓库里的内容并推送
+
+jobs:  # 定义具体的任务
+  convert-and-push:  # 任务 ID
+    runs-on: ubuntu-latest  # 在最新版的虚拟 Ubuntu 系统上运行
+    steps:  # 定义具体步骤
+      - name: 检出仓库最新代码  # 步骤 1：把你的代码下载到虚拟环境
+        uses: actions/checkout@v4
+
+      - name: 配置Python 3.10环境  # 步骤 2：安装 Python 运行环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 安装脚本依赖包  # 步骤 3：安装脚本运行需要的第三方库
+        run: pip install requests
+
+      - name: 执行Loon规则合并脚本  # 步骤 4：运行我们写好的 Python 脚本
+        run: python LOON_JIAOBEN.PY
+
+      - name: 配置Git身份并推送更新  # 步骤 5：把生成的新文件推送到你的 GitHub 仓库
+        run: |
+          # 设置 Git 机器人的名字和邮箱
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          # 将生成的 Loon_rules.txt 加入待提交名单
+          git add Loon_rules.txt
+          # 提交更改，信息中包含北京时间。--allow-empty 是为了防止没有更新时脚本报错退出
+          git commit -m "Loon规则更新：$(date +'%Y-%m-%d %H:%M:%S' --date='+8 hour')" --allow-empty
+          # 拉取远程最新更改进行合并（使用 rebase 保持历史线整洁）
+          git pull origin main --rebase
+          # 强制推送到主分支
+          git push origin main --force
