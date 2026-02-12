@@ -202,7 +202,7 @@ def main():
 
     # 构建文件头（精简版）
     header = [
-        f"# Loon 域名集合 (Smart Dedup)",
+        f"# Loon_AD刺客",
         f"# 生成时间: {get_beijing_time()}",
         f"# 统计: {len(final_rules)} 条",
         f"# 优化: 移除 {total_removed} 条冗余规则",
