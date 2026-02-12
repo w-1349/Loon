@@ -206,7 +206,7 @@ def main():
         f"# 生成时间: {get_beijing_time()}",
         f"# 统计: {len(final_rules)} 条",
         f"# 优化: 移除 {total_removed} 条冗余规则",
-        f"# 订阅地址: https://ddcm1349.github.io/Loon/Loon_AD刺客.txt",
+        f"# 订阅地址: https://ddcm1349.github.io/Loon/Loon_rules.txt",
         "# " + "=" * 58
     ]
     for s in source_stats:
