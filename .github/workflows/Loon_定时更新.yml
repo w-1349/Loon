@@ -1,4 +1,4 @@
-name: Loon_跨源合并去重
+name: Loon_跨源去重
 
 on:
   schedule:
