@@ -1,5 +1,5 @@
 # Loon DOMAIN-SET 规则集
-# 生成时间: 2026-02-12 16:40:44 (UTC+8)
+# 生成时间: 2026-02-12 16:42:32 (UTC+8)
 # 订阅地址: https://raw.githubusercontent.com/ddcm1349/Loon/main/Loon_rules.txt
 #
 # 【规则源详情】
