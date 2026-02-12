@@ -1,4 +1,4 @@
-name: Loon_Rules_Sync_CN  # 自动化同步任务
+name: Loon_自动转换同步  # 自动化同步任务
 
 on:
   schedule:
