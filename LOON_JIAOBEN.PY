@@ -9,7 +9,7 @@ RULE_SOURCES = [
     {"name": "AdRules", "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules.list"},
     {"name": "anti-ad", "url": "https://anti-ad.net/surge2.txt"}
 ]
-OUTPUT_FILE = "Loon_AD刺客.txt"
+OUTPUT_FILE = "Loon_rules.txt"
 
 def get_beijing_time():
     return (datetime.utcnow() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
