@@ -78,13 +78,11 @@ def dedup_rules(rules):
     # 第零步：全局完全相同去重
     unique_rules = list(dict.fromkeys(rules))
     dup_removed = len(rules) - len(unique_rules)
-    if dup_removed > 0:
-        print(f"   完全相同去重: {len(rules)} -> {len(unique_rules)} (移除 {dup_removed} 条)")
     rules = unique_rules
     
     # 第一步：分类收集
-    domain_rules = []      # (域名, 原规则)
-    suffix_rules = []      # (域名, 原规则)
+    domain_rules = []
+    suffix_rules = []
     other_rules = []
     
     for rule in rules:
@@ -103,30 +101,21 @@ def dedup_rules(rules):
     
     final_domain_rules = []
     removed_domain_count = 0
-    removed_domain_examples = []
     
     for domain, rule in domain_rules:
         parts = domain.split('.')
         is_covered = False
-        cover_by = None
         
         for i in range(len(parts)):
             suffix = '.'.join(parts[i:])
             if suffix in suffix_domains:
                 is_covered = True
-                cover_by = suffix
                 break
         
         if is_covered:
             removed_domain_count += 1
-            if len(removed_domain_examples) < 3:
-                removed_domain_examples.append(f"{domain}⊂{cover_by}")
         else:
             final_domain_rules.append(rule)
-    
-    print(f"   DOMAIN: {len(domain_rules)} -> {len(final_domain_rules)} (移除 {removed_domain_count} 条被SUFFIX包含的)")
-    if removed_domain_examples:
-        print(f"      示例: {', '.join(removed_domain_examples)}")
     
     # 第三步：SUFFIX 内部包含去重
     suffix_rules.sort(key=lambda x: len(x[0].split('.')))
@@ -134,37 +123,28 @@ def dedup_rules(rules):
     kept_suffix_domains = set()
     final_suffix_rules = []
     redundant_suffix_count = 0
-    redundant_suffix_examples = []
     
     for domain, rule in suffix_rules:
         parts = domain.split('.')
         is_redundant = False
-        cover_by = None
         
         for i in range(1, len(parts)):
             suffix = '.'.join(parts[i:])
             if suffix in kept_suffix_domains:
                 is_redundant = True
-                cover_by = suffix
                 break
         
         if is_redundant:
             redundant_suffix_count += 1
-            if len(redundant_suffix_examples) < 3:
-                redundant_suffix_examples.append(f"{domain}⊂{cover_by}")
         else:
             kept_suffix_domains.add(domain)
             final_suffix_rules.append(rule)
-    
-    print(f"   DOMAIN-SUFFIX: {len(suffix_rules)} -> {len(final_suffix_rules)} (移除 {redundant_suffix_count} 条)")
-    if redundant_suffix_examples:
-        print(f"      示例: {', '.join(redundant_suffix_examples)}")
     
     # 合并结果
     final_rules = final_suffix_rules + final_domain_rules + other_rules
     total_removed = dup_removed + removed_domain_count + redundant_suffix_count
     
-    return final_rules, len(final_suffix_rules), len(final_domain_rules), total_removed
+    return final_rules, total_removed
 
 def main():
     print(f"[{get_beijing_time()}] 🚀 启动规则抓取...")
@@ -191,17 +171,12 @@ def main():
             # 单源去重
             unique_processed = list(dict.fromkeys(processed))
             
-            suffix_raw = sum(1 for r in unique_processed if r.upper().startswith('DOMAIN-SUFFIX,'))
-            domain_raw = sum(1 for r in unique_processed if r.upper().startswith('DOMAIN,'))
-            
-            print(f"   原始: {len(lines)} | 提取: {len(unique_processed)} (S:{suffix_raw}/D:{domain_raw})", flush=True)
+            print(f"   原始: {len(lines)} | 提取: {len(unique_processed)}", flush=True)
             
             source_stats.append({
                 "name": src['name'], 
                 "raw": len(lines), 
-                "valid": len(unique_processed),
-                "suffix": suffix_raw,
-                "domain": domain_raw
+                "valid": len(unique_processed)
             })
             all_rules.extend(unique_processed)
             print(f"✅ 完成", flush=True)
@@ -215,7 +190,7 @@ def main():
     print(f"🔄 全局去重优化（总计 {len(all_rules)} 条）...", flush=True)
     
     # 执行去重
-    final_rules, final_suffix, final_domain, total_removed = dedup_rules(all_rules)
+    final_rules, total_removed = dedup_rules(all_rules)
     
     # 排序输出
     suffix_part = sorted([r for r in final_rules if r.upper().startswith('DOMAIN-SUFFIX,')])
@@ -223,21 +198,18 @@ def main():
     other_part = sorted([r for r in final_rules if not r.upper().startswith(('DOMAIN,', 'DOMAIN-SUFFIX,'))])
     final_rules = suffix_part + domain_part + other_part
     
-    print(f"\n📊 最终结果:", flush=True)
-    print(f"   总计: {len(final_rules)} 条", flush=True)
-    print(f"   ├─ DOMAIN-SUFFIX: {final_suffix}", flush=True)
-    print(f"   └─ DOMAIN: {final_domain}", flush=True)
+    print(f"\n📊 最终结果: {len(final_rules)} 条", flush=True)
 
-    # 构建文件头
+    # 构建文件头（精简版）
     header = [
         f"# Loon 域名集合 (Smart Dedup)",
         f"# 生成时间: {get_beijing_time()}",
-        f"# 统计: 总计 {len(final_rules)} | DOMAIN-SUFFIX {final_suffix} | DOMAIN {final_domain}",
-        f"# 优化: 共移除 {total_removed} 条冗余规则",
+        f"# 统计: {len(final_rules)} 条",
+        f"# 优化: 移除 {total_removed} 条冗余规则",
         "# " + "=" * 58
     ]
     for s in source_stats:
-        header.append(f"# 源: {s['name']} | 原始 {s['raw']} | 提取 {s['valid']} (S:{s['suffix']}/D:{s['domain']})")
+        header.append(f"# 源: {s['name']} | 原始 {s['raw']} | 提取 {s['valid']}")
     header.append("# " + "=" * 58)
 
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
