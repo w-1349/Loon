@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# 导入HTTP请求库
 import requests
-# 导入正则表达式库
 import re
-# 导入时间处理模块
 from datetime import datetime, timedelta
 
-# 上游规则源配置列表
 RULE_SOURCES = [
     {"name": "AdRules", "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules.list"},
     {"name": "anti-ad", "url": "https://anti-ad.net/surge2.txt"},
@@ -16,67 +12,46 @@ RULE_SOURCES = [
     {"name": "blackmatrix7-Advertising", "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Advertising/Advertising.list"},
 ]
 
-# 输出文件名
 OUTPUT_FILE = "Loon_rules.txt"
-# 订阅地址用于文件头
 SUBSCRIBE_URL = "https://ddcm1349.github.io/Loon/Loon_rules.txt"
 
 
 def get_beijing_time():
-    # 获取UTC时间
     utc_now = datetime.utcnow()
-    # 加8小时转为北京时间
     beijing_time = utc_now + timedelta(hours=8)
-    # 格式化时间字符串
     return beijing_time.strftime('%Y-%m-%d %H:%M:%S')
 
 
 def is_valid_domain(domain):
-    # 检查空值或超长
     if not domain or len(domain) > 253:
         return False
-    # 检查合法字符
     if not re.match(r'^[a-z0-9\-\.]+$', domain):
         return False
-    # 检查连续点或首尾点
     if '..' in domain or domain.startswith('.') or domain.endswith('.'):
         return False
-    # 分割各级标签
     labels = domain.split('.')
-    # 至少两级
     if len(labels) < 2:
         return False
-    # 检查每级标签
     for label in labels:
-        # 长度检查
         if not 1 <= len(label) <= 63:
             return False
-        # 横杠位置检查
         if label.startswith('-') or label.endswith('-'):
             return False
-    # 顶级域名不能纯数字
     if labels[-1].isdigit():
         return False
     return True
 
 
 def is_valid_ip_cidr(ip_str):
-    # IPv4 CIDR正则
     pattern = r'^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$'
-    # 正则匹配检查
     if not re.match(pattern, ip_str):
         return False
     try:
-        # 分割IP和掩码
         ip_part, mask_part = ip_str.split('/')
-        # 掩码转整数
         mask = int(mask_part)
-        # 掩码范围检查
         if not (0 <= mask <= 32):
             return False
-        # 分割IP四段
         parts = ip_part.split('.')
-        # 每段范围检查
         for part in parts:
             num = int(part)
             if not 0 <= num <= 255:
@@ -87,18 +62,13 @@ def is_valid_ip_cidr(ip_str):
 
 
 def is_valid_ip_cidr6(ip_str):
-    # 必须含斜杠
     if '/' not in ip_str:
         return False
     try:
-        # 从右分割避免冒号干扰
         ip_part, mask_part = ip_str.rsplit('/', 1)
-        # 掩码转整数
         mask = int(mask_part)
-        # IPv6掩码范围
         if not (0 <= mask <= 128):
             return False
-        # 必须含冒号
         if ':' not in ip_part:
             return False
         return True
@@ -107,29 +77,20 @@ def is_valid_ip_cidr6(ip_str):
 
 
 def is_valid_pure_ip(ip_str):
-    # 不能有斜杠
     if '/' in ip_str:
         return False
-    # 只允许数字和点
     if not re.match(r'^[\d\.]+$', ip_str):
         return False
-    # 分割四段
     parts = ip_str.split('.')
-    # 必须四段
     if len(parts) != 4:
         return False
     try:
-        # 检查每段
         for part in parts:
-            # 不能为空
             if not part:
                 return False
-            # 转整数
             num = int(part)
-            # 范围0-255
             if not 0 <= num <= 255:
                 return False
-            # 禁止前导零
             if len(part) > 1 and part[0] == '0':
                 return False
         return True
@@ -138,11 +99,8 @@ def is_valid_pure_ip(ip_str):
 
 
 def is_loon_format(line):
-    # 转大写比较
     upper_line = line.upper()
-    # 定义所有前缀
     prefixes = ('DOMAIN,', 'DOMAIN-SUFFIX,', 'DOMAIN-KEYWORD,', 'IP-CIDR,', 'IP-CIDR6,')
-    # 检查是否匹配任一前缀
     for prefix in prefixes:
         if upper_line.startswith(prefix):
             return True
@@ -150,52 +108,37 @@ def is_loon_format(line):
 
 
 def parse_loon_rule(line):
-    # 逗号分割
     parts = line.split(',')
-    # 至少两部分
     if len(parts) < 2:
         return None
-    # 提取类型
     rule_type = parts[0].strip().upper()
-    # 提取值
     value = parts[1].strip()
-    # 提取参数
     params = [p.strip() for p in parts[2:]] if len(parts) > 2 else []
     return (rule_type, value, params)
 
 
 def normalize_rule(rule_type, value, params):
-    # 分离no-resolve
     other_params = [p for p in params if p.lower() != 'no-resolve']
-    # 检查是否有no-resolve
     has_no_resolve = any(p.lower() == 'no-resolve' for p in params)
-    # 重组参数
     final_params = other_params.copy()
     if has_no_resolve:
         final_params.append('no-resolve')
-    # 有参数则拼接
     if final_params:
         return f"{rule_type},{value},{','.join(final_params)}"
     return f"{rule_type},{value}"
 
 
 def process_loon_line(line):
-    # 解析规则
     parsed = parse_loon_rule(line)
     if parsed is None:
         return None
-    # 解包
     rule_type, value, params = parsed
-    # 支持类型集合
     valid_types = {'DOMAIN', 'DOMAIN-SUFFIX', 'DOMAIN-KEYWORD', 'IP-CIDR', 'IP-CIDR6'}
-    # 类型检查
     if rule_type not in valid_types:
         return None
-    # 域名类型清洗no-resolve
     domain_types = {'DOMAIN', 'DOMAIN-SUFFIX', 'DOMAIN-KEYWORD'}
     if rule_type in domain_types:
         params = [p for p in params if p.lower() != 'no-resolve']
-    # 根据类型验证值
     if rule_type in ('DOMAIN', 'DOMAIN-SUFFIX', 'DOMAIN-KEYWORD'):
         value_lower = value.lower()
         is_ip = is_valid_pure_ip(value_lower)
@@ -208,38 +151,28 @@ def process_loon_line(line):
     elif rule_type == 'IP-CIDR6':
         if not is_valid_ip_cidr6(value):
             return None
-    # 标准化输出
     return normalize_rule(rule_type, value, params)
 
 
 def process_line_smart(line):
-    # 去空白
     line = line.strip()
-    # 跳过空行
     if not line:
         return None
-    # 跳过注释
     if line.startswith('#') or line.startswith('!') or line.startswith('['):
         return None
-    # Loon格式处理
     if is_loon_format(line):
         return process_loon_line(line)
-    # IPv4 CIDR处理
     if is_valid_ip_cidr(line):
         return f"IP-CIDR,{line}"
-    # IPv6 CIDR处理
     if is_valid_ip_cidr6(line):
         return f"IP-CIDR6,{line}"
-    # 纯IPv4处理
     if is_valid_pure_ip(line):
         return f"DOMAIN,{line}"
-    # 带点域名处理
     if line.startswith('.'):
         domain = line[1:].lower()
         if is_valid_domain(domain):
             return f"DOMAIN-SUFFIX,{domain}"
         return None
-    # 普通域名处理
     domain = line.lower()
     if is_valid_domain(domain):
         return f"DOMAIN,{domain}"
@@ -247,30 +180,21 @@ def process_line_smart(line):
 
 
 def get_rule_key(rule):
-    # 解析规则
     parsed = parse_loon_rule(rule)
     if parsed is None:
         return rule
-    # 解包
     rule_type, value, params = parsed
-    # 值转小写
     value_lower = value.lower()
-    # 检查no-resolve
     has_no_resolve = any(p.lower() == 'no-resolve' for p in params)
-    # 其他参数排序
     other_params = sorted([p.lower() for p in params if p.lower() != 'no-resolve'])
-    # 返回四元组键
     return (rule_type.upper(), value_lower, tuple(other_params), has_no_resolve)
 
 
 def get_rule_priority(rule):
-    # 解析规则
     parsed = parse_loon_rule(rule)
     if parsed is None:
         return 99
-    # 提取类型
     rule_type = parsed[0]
-    # 优先级映射
     priority_map = {
         'DOMAIN-KEYWORD': 1,
         'DOMAIN': 2,
@@ -282,7 +206,6 @@ def get_rule_priority(rule):
 
 
 def ip_to_int(ip_str):
-    # 尝试转换
     try:
         parts = ip_str.split('.')
         return (int(parts[0]) << 24) + (int(parts[1]) << 16) + (int(parts[2]) << 8) + int(parts[3])
@@ -291,21 +214,15 @@ def ip_to_int(ip_str):
 
 
 def remove_ip_domain_redundant(domain_rules_with_value, ip_cidr_list):
-    # 空检查
     if not domain_rules_with_value or not ip_cidr_list:
         return [r for _, r in domain_rules_with_value], 0
-    # 初始化
     removed = 0
     kept_rules = []
-    # 遍历域名规则
     for domain, rule in domain_rules_with_value:
-        # 转IP整数
         ip_int = ip_to_int(domain)
-        # 不是IP则保留
         if ip_int is None:
             kept_rules.append(rule)
             continue
-        # 检查是否被IP段包含
         is_covered = False
         for kept_ip, kept_mask, _ in ip_cidr_list:
             shift = 32 - kept_mask
@@ -314,7 +231,6 @@ def remove_ip_domain_redundant(domain_rules_with_value, ip_cidr_list):
             if (ip_int >> shift) == (kept_ip >> shift):
                 is_covered = True
                 break
-        # 决定保留或移除
         if is_covered:
             removed += 1
         else:
@@ -425,12 +341,17 @@ def dedup_rules(rules):
     final_domain_rules_with_value = [(d, r) for d, r in domain_rules if r in final_domain_rules]
     final_domain_rules, cross_removed = remove_ip_domain_redundant(final_domain_rules_with_value, kept_ip_cidr)
     
-    # 合并结果
+    # 合并结果 - 修复：所有列表都要解包，只取rule字符串
     final_rules = []
-    final_rules.extend(keyword_rules)
+    # keyword_rules 是 (value, rule) 元组列表，需要解包
+    final_rules.extend([r for _, r in keyword_rules])
+    # final_domain_rules 已经是 rule 字符串列表（经过跨类型去重返回）
     final_rules.extend(final_domain_rules)
+    # final_suffix_rules 是 rule 字符串列表
     final_rules.extend(final_suffix_rules)
+    # kept_ip_cidr 是 (ip_int, mask, rule) 元组列表，需要解包
     final_rules.extend([r for _, _, r in kept_ip_cidr])
+    # ip_cidr6_rules 是 (value, rule) 元组列表，需要解包
     final_rules.extend([r for _, r in ip_cidr6_rules])
     
     total_removed = dup_removed + removed_ip_count + removed_domain_count + redundant_suffix_count + cross_removed
@@ -438,16 +359,13 @@ def dedup_rules(rules):
 
 
 def main():
-    # 打印启动信息
     print(f"[{get_beijing_time()}] 🚀 启动规则抓取...")
     print("=" * 60, flush=True)
     
-    # 初始化
     all_rules = []
     source_stats = []
     headers = {'User-Agent': 'Mozilla/5.0 (compatible; RuleFetcher/1.0)'}
     
-    # 遍历各源
     for src in RULE_SOURCES:
         try:
             print(f"📥 拉取: {src['name']}...", flush=True)
@@ -456,7 +374,6 @@ def main():
             lines = resp.text.splitlines()
             processed = [r for r in (process_line_smart(l) for l in lines) if r is not None]
             
-            # 单源去重
             seen = set()
             unique_processed = []
             for r in processed:
@@ -474,13 +391,11 @@ def main():
             import traceback
             traceback.print_exc()
     
-    # 全局去重
     print("=" * 60, flush=True)
     print(f"🔄 全局去重优化（总计 {len(all_rules)} 条）...", flush=True)
     final_rules, total_removed = dedup_rules(all_rules)
     final_rules.sort(key=lambda r: (get_rule_priority(r), r.lower()))
     
-    # 统计
     type_counts = {}
     for r in final_rules:
         parsed = parse_loon_rule(r)
@@ -492,7 +407,6 @@ def main():
     for t, c in sorted(type_counts.items(), key=lambda x: get_rule_priority(f"{x[0]},")):
         print(f"   • {t}: {c} 条", flush=True)
     
-    # 构建文件头
     header = [
         f"# Loon_AD刺客",
         f"# 生成时间: {get_beijing_time()}",
@@ -508,7 +422,6 @@ def main():
         header.append(f"# {t}: {c}")
     header.append("# " + "=" * 58)
     
-    # 写入文件
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         f.write('\n'.join(header) + '\n\n' + '\n'.join(final_rules))
     
