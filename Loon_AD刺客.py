@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 RULE_SOURCES = [
     {"name": "AdRules", "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules.list"},
     {"name": "anti-ad", "url": "https://anti-ad.net/surge2.txt"}
+    {"name": "Advertising", "url": "https://rule.kelee.one/Loon/Advertising.lsr"}
 ]
 OUTPUT_FILE = "Loon_rules.txt"
 
