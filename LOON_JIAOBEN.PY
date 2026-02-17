@@ -403,8 +403,8 @@ def dedup_rules(rules):
     去重流程：
     1. 完全相同规则去重
     2. IP-CIDR包含关系去重（移除被更大范围包含的子网）
-    3. DOMAIN被DOMAIN-SUFFIX包含去重
-    4. DOMAIN-SUFFIX内部包含去重（移除被子后缀包含的规则）
+    3. DOMAIN被DOMAIN-SUFFIX包含去重（只使用多标签后缀）
+    4. DOMAIN-SUFFIX内部包含去重（只使用多标签后缀，移除单标签）
     5. 跨类型去重（移除被IP-CIDR覆盖的纯IP域名）
     
     Args:
@@ -456,18 +456,16 @@ def dedup_rules(rules):
         elif rule_type == 'DOMAIN-KEYWORD':
             keyword_rules.append((value.lower(), rule))
     
-    # 第二层：IP-CIDR包含去重（按掩码从大到小排序，保留大范围）
-    ip_cidr_rules.sort(key=lambda x: -x[1])
+    # 第二层：IP-CIDR包含去重（按掩码升序排序，保留大范围）
+    ip_cidr_rules.sort(key=lambda x: x[1])  # 升序：小掩码/大范围在前
     kept_ip_cidr = []
     removed_ip_count = 0
     for ip_int, mask, rule in ip_cidr_rules:
         is_covered = False
         for kept_ip, kept_mask, _ in kept_ip_cidr:
-            if kept_mask <= mask:
+            if kept_mask >= mask:  # 已保留的掩码更大（范围更小），无法覆盖当前
                 continue
             shift = 32 - kept_mask
-            if shift < 0:
-                continue
             if (ip_int >> shift) == (kept_ip >> shift):
                 is_covered = True
                 break
@@ -476,8 +474,9 @@ def dedup_rules(rules):
         else:
             kept_ip_cidr.append((ip_int, mask, rule))
     
-    # 第三层.1：DOMAIN被SUFFIX包含去重
-    suffix_domains = set(d for d, _ in suffix_rules)
+    # 第三层.1：DOMAIN被SUFFIX包含去重（只使用多标签后缀）
+    # 过滤单标签后缀（如com/org/net），避免过于激进的覆盖
+    multi_label_suffixes = set(d for d, _ in suffix_rules if len(d.split('.')) >= 2)
     final_domain_rules = []
     removed_domain_count = 0
     for domain, rule in domain_rules:
@@ -485,7 +484,8 @@ def dedup_rules(rules):
         is_covered = False
         for i in range(len(parts)):
             suffix = '.'.join(parts[i:])
-            if suffix in suffix_domains:
+            # 只检查多标签后缀（≥2标签），单标签后缀（如com）不用于覆盖
+            if suffix in multi_label_suffixes and len(suffix.split('.')) >= 2:
                 is_covered = True
                 break
         if is_covered:
@@ -493,19 +493,17 @@ def dedup_rules(rules):
         else:
             final_domain_rules.append(rule)
     
-    # 第三层.2：SUFFIX内部包含去重（按标签数排序，保留父后缀）
-    suffix_rules.sort(key=lambda x: len(x[0].split('.')))
+    # 第三层.2：SUFFIX内部去重（过滤单标签，保留多标签父后缀）
+    # 先过滤掉单标签后缀（如com/org/net），这些通常是错误规则
+    suffix_rules = [(d, r) for d, r in suffix_rules if len(d.split('.')) >= 2]
+    suffix_rules.sort(key=lambda x: len(x[0].split('.')))  # 按标签数升序
     kept_suffix_domains = set()
     final_suffix_rules = []
     redundant_suffix_count = 0
     for domain, rule in suffix_rules:
-        parts = domain.split('.')
-        is_redundant = False
-        for i in range(1, len(parts)):
-            parent_suffix = '.'.join(parts[i:])
-            if parent_suffix in kept_suffix_domains:
-                is_redundant = True
-                break
+        # 检查是否以任何已保留的多标签后缀结尾
+        is_redundant = any(domain.endswith('.' + k) or domain == k 
+                          for k in kept_suffix_domains)
         if is_redundant:
             redundant_suffix_count += 1
         else:
