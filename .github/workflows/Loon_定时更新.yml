@@ -1,4 +1,4 @@
-name: Loon_跨源去重
+name: Loon_定时更新
 
 on:
   schedule:
