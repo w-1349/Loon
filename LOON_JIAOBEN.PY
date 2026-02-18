@@ -87,7 +87,6 @@ def dedup_engine(rules):
     stats = {'danger': 0, 'logic': 0, 'exact': 0}
     seen, unique_base, log_logic = set(), [], []
 
-    # 1. 物理层去重
     for r in rules:
         p = parse_loon_rule(r)
         if not p: continue
@@ -99,7 +98,6 @@ def dedup_engine(rules):
 
     key_rules, suf_raw, dom_raw, ip_raw, ip6_rules = [], [], [], [], []
 
-    # 2. 危险判定与规则分类
     for rtype, rval, rparams in unique_base:
         raw_str = normalize_rule_smart(rtype, rval, rparams)
         if is_dangerous_rule(rval):
@@ -116,7 +114,6 @@ def dedup_engine(rules):
             except: continue
         elif rtype == 'IP-CIDR6': ip6_rules.append(raw_str)
 
-    # 3. 后缀覆盖判定 (Trie)
     suf_raw.sort(key=lambda x: len(x[1].split('.')))
     trie, final_suf = {}, []
     for rule_str, val in suf_raw:
@@ -130,7 +127,6 @@ def dedup_engine(rules):
             stats['logic'] += 1
             log_logic.append(f"[逻辑覆盖] {rule_str:<45} # 溯源: DOMAIN-SUFFIX,{reason}")
 
-    # 4. DOMAIN 被后缀涵盖判定
     final_dom = []
     for r_str, v in dom_raw:
         reason = get_trie_reason(v, trie)
@@ -139,7 +135,6 @@ def dedup_engine(rules):
             log_logic.append(f"[逻辑覆盖] {r_str:<45} # 溯源: DOMAIN-SUFFIX,{reason}")
         else: final_dom.append(r_str)
 
-    # 5. IP 网段覆盖判定 (大网段覆盖小网段)
     ip_raw.sort(key=lambda x: x[1].prefixlen)
     kept_ip_nets, final_ip = [], []
     for rule_str, net in ip_raw:
@@ -151,21 +146,13 @@ def dedup_engine(rules):
             final_ip.append(rule_str)
             kept_ip_nets.append(net)
 
-    # 6. IP 覆盖纯 IP 域名规则 (重点日志加强区)
     final_dom_clean = []
     for r_str in final_dom:
         v = r_str.split(',')[1]
-        # 判断是否为纯 IPv4 格式
         if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', v):
             try:
                 ip_obj = ipaddress.IPv4Address(v)
-                # 显式比对所有已保留网段
-                covered_by = None
-                for k_net in kept_ip_nets:
-                    if ip_obj in k_net:
-                        covered_by = k_net
-                        break
-                
+                covered_by = next((k for k in kept_ip_nets if ip_obj in k), None)
                 if covered_by:
                     stats['logic'] += 1
                     log_logic.append(f"[逻辑覆盖] {r_str:<45} # 溯源: IP-CIDR,{covered_by}")
@@ -179,16 +166,16 @@ def dedup_engine(rules):
 def format_source_stats(source_stats):
     max_name_len = max(len(s['name']) for s in source_stats)
     width = max(max_name_len, 10)
-    lines = ["# " + "=" * (width + 25)]
-    lines.append(f"# {'名称':<{width}} {'原始规模':>8} {'有效提取':>8} {'物理去重':>8}")
-    lines.append("# " + "-" * (width + 25))
+    lines = ["# " + "=" * (width + 35)]
+    lines.append(f"# {'名称':<{width}} {'原始规模':>10} {'有效提取':>10} {'物理去重':>10}")
+    lines.append("# " + "-" * (width + 35))
     for s in source_stats:
-        lines.append(f"# {s['name']:<{width}} {s['raw']:>8} {s['valid']:>8} {s['raw']-s['valid']:>8}")
-    lines.append("# " + "=" * (width + 25))
+        lines.append(f"# {s['name']:<{width}} {s['raw']:>10} {s['valid']:>10} {s['raw']-s['valid']:>10}")
+    lines.append("# " + "=" * (width + 35))
     return lines
 
 def main():
-    log("🚀 启动自动化精简任务 (IP 日志增强版)...", "INFO")
+    log("🚀 启动自动化精简任务...", "INFO")
     session, all_rules, source_stats = create_session(), [], []
     total_start = time.time()
 
@@ -210,18 +197,27 @@ def main():
             all_rules.extend(processed)
             source_stats.append({"name": src['name'], "raw": len(raw_lines), "valid": len(processed)})
         except Exception as e:
-            log(f"同步失败: {src['name']} ({e})", "ERROR")
+            log(f"失败: {src['name']} ({e})", "ERROR")
 
-    log("正在执行精简算法与 IP 跨类审计...", "INFO")
     final_list, stats, log_logic = dedup_engine(all_rules)
     
+    # --- 关键修复：分类统计逻辑 ---
+    type_counts = {}
+    for r in final_list:
+        rtype = r.split(',')[0]
+        type_counts[rtype] = type_counts.get(rtype, 0) + 1
+    
+    # 结果排序
     prio = {'DOMAIN': 1, 'DOMAIN-SUFFIX': 2, 'DOMAIN-KEYWORD': 3, 'IP-CIDR': 4, 'IP-CIDR6': 5}
     final_list.sort(key=lambda x: (prio.get(x.split(',')[0], 99), x.lower()))
 
+    # --- 关键修复：构建带有详细统计的文件头 ---
     header = [
-        f"# Loon 刺客合集 (IP 日志增强版)",
+        f"# Loon 刺客合集 (全量审计增强版)",
         f"# 生成时间: {get_beijing_time()}",
-        f"# 压缩分析: 逻辑去重 {stats['logic']} | 危险防御 {stats['danger']} | 物理重复 {stats['exact']}",
+        f"# 总计保留: {len(final_list)} 条规则",
+        f"# 类型分布: " + " | ".join([f"{k}: {v}" for k, v in sorted(type_counts.items())]),
+        f"# 压缩分析: 逻辑精简 {stats['logic']} | 危险防御 {stats['danger']} | 物理重复 {stats['exact']}",
         f"# 订阅地址: {SUBSCRIBE_URL}",
     ]
     header.extend(format_source_stats(source_stats))
@@ -230,14 +226,14 @@ def main():
         f.write('\n'.join(header) + '\n\n' + '\n'.join(final_list))
     
     with open(REMOVED_LOG_FILE, 'w', encoding='utf-8') as f:
-        f.write(f"# Loon 自动化审计追踪日志 - {get_beijing_time()}\n")
+        f.write(f"# Loon 自动化审计日志 - {get_beijing_time()}\n")
         f.write(f"# ----------------------------------------------------------\n")
-        f.write(f"# 逻辑过滤总数: {len(log_logic)} 条\n")
-        f.write(f"# 包括：后缀包含关系溯源、IP网段覆盖溯源\n")
+        f.write(f"# 最终规则总数: {len(final_list)}\n")
+        f.write(f"# 逻辑精简总数: {len(log_logic)} (A 被 B 覆盖的溯源记录)\n")
         f.write(f"# ----------------------------------------------------------\n\n")
-        f.write('\n'.join(log_logic) if log_logic else "本次任务无逻辑重叠。")
+        f.write('\n'.join(log_logic) if log_logic else "无逻辑冲突。")
 
-    log(f"✅ 处理完成！保留规则 {len(final_list)} 条", "OK")
+    log(f"✅ 处理完成！最终规则数: {len(final_list)} 条", "OK")
 
 if __name__ == "__main__":
     main()
