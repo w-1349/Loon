@@ -1,257 +1,37 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+name: Loon_定时更新
 
-import requests
-import re
-import time
-import ipaddress
-from datetime import datetime, timedelta
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+on:
+  schedule:
+    - cron: '49 5 * * *'   # 北京时间 13:49
+    - cron: '49 17 * * *'  # 北京时间 01:49
+  workflow_dispatch:       # 手动触发按钮
 
-# ================= 配置区 =================
-RULE_SOURCES = [
-    {"name": "AdRules", "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules.list"},
-    {"name": "anti-ad", "url": "https://anti-ad.net/surge2.txt"},
-    {"name": "ADG", "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Advertising/Advertising.list"},
-    {"name": "ADG_Domain", "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Advertising/Advertising_Domain.list"},
-    {"name": "Privacy", "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Privacy/Privacy.list"},
-    {"name": "Privacy_Domain", "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Privacy/Privacy_Domain.list"},
-]
+permissions:
+  contents: write
 
-OUTPUT_FILE = "Loon_rules.txt"
-REMOVED_LOG_FILE = "loon_rules.log"
-SUBSCRIBE_URL = "https://ddcm1349.github.io/Loon/Loon_rules.txt"
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库代码
+        uses: actions/checkout@v4
 
-# 严谨危险词库：仅拦截试图封杀整个后缀的规则，确保 SLD (如 com.cn) 安全
-INVALID_KEYWORDS = {
-    'com', 'net', 'cn', 'org', 'io', 'co', 'tv', 'cc', 'app', 'dev', 'top', 'xyz', 'info',
-    'com.cn', 'net.cn', 'org.cn', 'gov.cn', 'edu.cn', 'ac.cn',
-    'com.hk', 'net.hk', 'org.hk', 'com.tw', 'net.tw', 'org.tw',
-    'com.sg', 'com.jp', 'co.uk', 'org.uk', 'com.au', 'com.mo'
-}
-# ==========================================
+      - name: 设置 Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-def get_beijing_time():
-    """获取当前北京时间字符串"""
-    return (datetime.utcnow() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
+      - name: 安装依赖
+        run: pip install requests
 
-def log(msg, level="INFO"):
-    """终端实时进度输出"""
-    timestamp = get_beijing_time()
-    prefix = {"INFO": "ℹ️", "OK": "✅", "ERROR": "❌"}.get(level, "•")
-    print(f"[{timestamp}] {prefix} {msg}", flush=True)
+      - name: 执行规则转换脚本
+        run: python LOON_JIAOBEN.PY
 
-def create_session():
-    """带自动重试的 HTTP 会话，增强网络环境适应性"""
-    session = requests.Session()
-    retries = Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
-    session.mount("http://", HTTPAdapter(max_retries=retries))
-    session.mount("https://", HTTPAdapter(max_retries=retries))
-    session.headers.update({"User-Agent": "Mozilla/5.0 LoonRuleEngine/3.5"})
-    return session
-
-def is_valid_domain(domain):
-    """域名基础格式严谨性校验"""
-    if not domain or len(domain) > 253: return False
-    if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', domain): return True
-    if not re.match(r'^[a-z0-9\-\.]+$', domain): return False
-    labels = domain.split('.')
-    return len(labels) >= 2 and not labels[-1].isdigit()
-
-def is_dangerous_rule(rval):
-    """全等匹配：识别潜在的断网级错误规则"""
-    return rval.lower() in INVALID_KEYWORDS
-
-def parse_loon_rule(line):
-    """Loon 规则行结构化解析"""
-    parts = line.split(',')
-    if len(parts) < 2: return None
-    params = [p.strip().lower() for p in parts[2:] if p.strip()]
-    return (parts[0].strip().upper(), parts[1].strip(), params)
-
-def normalize_rule_smart(rtype, rval, rparams):
-    """标准规则输出格式化"""
-    rval = rval.lower()
-    if rtype in ("DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD"):
-        return f"{rtype},{rval}"
-    if rtype in ("IP-CIDR", "IP-CIDR6"):
-        return f"{rtype},{rval},no-resolve" if "no-resolve" in rparams else f"{rtype},{rval}"
-    return f"{rtype},{rval}"
-
-def get_trie_reason(val, trie):
-    """
-    【核心溯源逻辑】
-    在 Trie 树中通过倒序匹配寻找覆盖当前的具体父规则
-    """
-    node = trie
-    parts = val.split('.')[::-1]
-    match_path = []
-    for part in parts:
-        if part not in node: return None
-        node = node[part]
-        match_path.append(part)
-        if "#" in node:
-            return ".".join(match_path[::-1])
-    return None
-
-def dedup_engine(rules):
-    """深度精简引擎：保持原始去重逻辑，仅增强日志信息量"""
-    stats = {'danger': 0, 'logic': 0, 'exact': 0}
-    seen, unique_base, log_logic = set(), [], []
-
-    # 1. 物理层去重
-    for r in rules:
-        p = parse_loon_rule(r)
-        if not p: continue
-        norm = normalize_rule_smart(*p)
-        if norm not in seen:
-            seen.add(norm)
-            unique_base.append(p)
-        else: stats['exact'] += 1
-
-    key_rules, suf_raw, dom_raw, ip_raw, ip6_rules = [], [], [], [], []
-
-    # 2. 分类与危险防御
-    for rtype, rval, rparams in unique_base:
-        raw_str = normalize_rule_smart(rtype, rval, rparams)
-        if is_dangerous_rule(rval):
-            stats['danger'] += 1
-            log_logic.append(f"[危险拦截] {raw_str:<45} # 全等命中基础后缀黑名单")
-            continue
-        if rtype == 'DOMAIN-KEYWORD': key_rules.append(raw_str)
-        elif rtype == 'DOMAIN-SUFFIX': suf_raw.append((raw_str, rval))
-        elif rtype == 'DOMAIN': dom_raw.append((raw_str, rval))
-        elif rtype == 'IP-CIDR':
-            try:
-                net = ipaddress.IPv4Network(rval, strict=False)
-                ip_raw.append((raw_str, net))
-            except: continue
-        elif rtype == 'IP-CIDR6': ip6_rules.append(raw_str)
-
-    # 3. 后缀覆盖判定 (Trie)
-    suf_raw.sort(key=lambda x: len(x[1].split('.')))
-    trie, final_suf = {}, []
-    for rule_str, val in suf_raw:
-        reason = get_trie_reason(val, trie)
-        if not reason:
-            final_suf.append(rule_str)
-            node = trie
-            for part in val.split('.')[::-1]: node = node.setdefault(part, {})
-            node["#"] = True
-        else:
-            stats['logic'] += 1
-            log_logic.append(f"[逻辑覆盖] {rule_str:<45} # 溯源: DOMAIN-SUFFIX,{reason}")
-
-    # 4. 精确域名被后缀覆盖判定
-    final_dom = []
-    for r_str, v in dom_raw:
-        reason = get_trie_reason(v, trie)
-        if reason:
-            stats['logic'] += 1
-            log_logic.append(f"[逻辑覆盖] {r_str:<45} # 溯源: DOMAIN-SUFFIX,{reason}")
-        else: final_dom.append(r_str)
-
-    # 5. IP 网段嵌套覆盖判定
-    ip_raw.sort(key=lambda x: x[1].prefixlen)
-    kept_ip_nets, final_ip = [], []
-    for rule_str, net in ip_raw:
-        parent_net = next((k for k in kept_ip_nets if k.supernet_of(net)), None)
-        if parent_net:
-            stats['logic'] += 1
-            log_logic.append(f"[逻辑覆盖] {rule_str:<45} # 溯源: IP-CIDR,{parent_net}")
-        else:
-            final_ip.append(rule_str)
-            kept_ip_nets.append(net)
-
-    # 6. 纯 IP 跨类规则判定 (DOMAIN 是否在 CIDR 中)
-    final_dom_clean = []
-    for r_str in final_dom:
-        v = r_str.split(',')[1]
-        if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', v):
-            try:
-                ip_obj = ipaddress.IPv4Address(v)
-                parent_net = next((k for k in kept_ip_nets if ip_obj in k), None)
-                if parent_net:
-                    stats['logic'] += 1
-                    log_logic.append(f"[逻辑覆盖] {r_str:<45} # 溯源: IP-CIDR,{parent_net}")
-                    continue
-            except: pass
-        final_dom_clean.append(r_str)
-
-    res = final_dom_clean + final_suf + key_rules + final_ip + ip6_rules
-    return res, stats, log_logic
-
-def format_source_stats(source_stats):
-    """构建数据源分析表"""
-    max_name_len = max(len(s['name']) for s in source_stats)
-    width = max(max_name_len, 10)
-    lines = ["# " + "=" * (width + 25)]
-    lines.append(f"# {'名称':<{width}} {'原始规模':>8} {'有效提取':>8} {'物理去重':>8}")
-    lines.append("# " + "-" * (width + 25))
-    for s in source_stats:
-        lines.append(f"# {s['name']:<{width}} {s['raw']:>8} {s['valid']:>8} {s['raw']-s['valid']:>8}")
-    lines.append("# " + "=" * (width + 25))
-    return lines
-
-def main():
-    log("🚀 启动自动化精简任务...", "INFO")
-    session, all_rules, source_stats = create_session(), [], []
-    total_start = time.time()
-
-    # 阶段一：源数据采集
-    for idx, src in enumerate(RULE_SOURCES, 1):
-        log(f"[{idx}/{len(RULE_SOURCES)}] 正在拉取: {src['name']}")
-        try:
-            resp = session.get(src['url'], timeout=20)
-            resp.raise_for_status()
-            raw_lines = resp.text.splitlines()
-            processed = []
-            for l in raw_lines:
-                l = l.strip()
-                if not l or any(l.startswith(x) for x in ('#', '!', '[')): continue
-                # 智能格式转换
-                if re.match(r'^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$', l): processed.append(f"IP-CIDR,{l}")
-                elif re.match(r'^(\d{1,3}\.){3}\d{1,3}$', l): processed.append(f"DOMAIN,{l}")
-                elif l.startswith('.'): processed.append(f"DOMAIN-SUFFIX,{l[1:]}")
-                elif ',' not in l and is_valid_domain(l): processed.append(f"DOMAIN,{l}")
-                else: processed.append(l)
-            all_rules.extend(processed)
-            source_stats.append({"name": src['name'], "raw": len(raw_lines), "valid": len(processed)})
-        except Exception as e:
-            log(f"源同步异常: {src['name']} ({e})", "ERROR")
-
-    # 阶段二：应用算法精简
-    log("正在分析去重逻辑并生成审计追踪...", "INFO")
-    final_list, stats, log_logic = dedup_engine(all_rules)
-    
-    # 结果分层排序
-    prio = {'DOMAIN': 1, 'DOMAIN-SUFFIX': 2, 'DOMAIN-KEYWORD': 3, 'IP-CIDR': 4, 'IP-CIDR6': 5}
-    final_list.sort(key=lambda x: (prio.get(x.split(',')[0], 99), x.lower()))
-
-    # 头部文件构建
-    header = [
-        f"# Loon 刺客合集 (SLD 防护 & 审计溯源版)",
-        f"# 生成时间: {get_beijing_time()}",
-        f"# 压缩分析: 逻辑去重 {stats['logic']} | 危险防御 {stats['danger']} | 物理重复 {stats['exact']}",
-        f"# 订阅地址: {SUBSCRIBE_URL}",
-    ]
-    header.extend(format_source_stats(source_stats))
-    
-    # 持久化规则文件
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(header) + '\n\n' + '\n'.join(final_list))
-    
-    # 持久化溯源审计日志
-    with open(REMOVED_LOG_FILE, 'w', encoding='utf-8') as f:
-        f.write(f"# Loon 自动化审计追踪日志 - {get_beijing_time()}\n")
-        f.write(f"# ----------------------------------------------------------\n")
-        f.write(f"# 逻辑过滤总数: {len(log_logic)} 条 (记录 A 被 B 覆盖的详细关系)\n")
-        f.write(f"# 物理物理重复: {stats['exact']} 条 (各源完全相同的冗余项)\n")
-        f.write(f"# ----------------------------------------------------------\n\n")
-        f.write('\n'.join(log_logic) if log_logic else "本次任务无逻辑重叠。")
-
-    log(f"✅ 处理圆满成功！最终规则数: {len(final_list)} 条", "OK")
-
-if __name__ == "__main__":
-    main()
+      - name: 提交并推送到仓库
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          # 精确添加：规则文件与审计日志
+          git add Loon_rules.txt loon_removed_rules.log
+          git commit -m "自动更新规则及日志：$(date +'%Y-%m-%d %H:%M:%S' --date='+8 hour')" --allow-empty
+          git push origin main --force
