@@ -31,7 +31,7 @@ jobs:
         
     - name: 运行 Loon 规则源测试
       run: |
-        python3 ceshi.py
+        python3 cheshi.py
         
     - name: 上传测试结果
       uses: actions/upload-artifact@v4
