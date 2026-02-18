@@ -23,7 +23,6 @@ OUTPUT_FILE = "Loon_rules.txt"
 REMOVED_LOG_FILE = "loon_rules.log"
 SUBSCRIBE_URL = "https://ddcm1349.github.io/Loon/Loon_rules.txt"
 
-# 严谨危险词库：仅拦截试图封杀整个后缀的规则，确保 SLD (如 com.cn) 安全
 INVALID_KEYWORDS = {
     'com', 'net', 'cn', 'org', 'io', 'co', 'tv', 'cc', 'app', 'dev', 'top', 'xyz', 'info',
     'com.cn', 'net.cn', 'org.cn', 'gov.cn', 'edu.cn', 'ac.cn',
@@ -33,17 +32,14 @@ INVALID_KEYWORDS = {
 # ==========================================
 
 def get_beijing_time():
-    """获取当前北京时间字符串"""
     return (datetime.utcnow() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
 
 def log(msg, level="INFO"):
-    """终端实时进度输出"""
     timestamp = get_beijing_time()
     prefix = {"INFO": "ℹ️", "OK": "✅", "ERROR": "❌"}.get(level, "•")
     print(f"[{timestamp}] {prefix} {msg}", flush=True)
 
 def create_session():
-    """带自动重试的 HTTP 会话，增强网络环境适应性"""
     session = requests.Session()
     retries = Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
     session.mount("http://", HTTPAdapter(max_retries=retries))
@@ -52,7 +48,6 @@ def create_session():
     return session
 
 def is_valid_domain(domain):
-    """域名基础格式严谨性校验"""
     if not domain or len(domain) > 253: return False
     if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', domain): return True
     if not re.match(r'^[a-z0-9\-\.]+$', domain): return False
@@ -60,18 +55,15 @@ def is_valid_domain(domain):
     return len(labels) >= 2 and not labels[-1].isdigit()
 
 def is_dangerous_rule(rval):
-    """全等匹配：识别潜在的断网级错误规则"""
     return rval.lower() in INVALID_KEYWORDS
 
 def parse_loon_rule(line):
-    """Loon 规则行结构化解析"""
     parts = line.split(',')
     if len(parts) < 2: return None
     params = [p.strip().lower() for p in parts[2:] if p.strip()]
     return (parts[0].strip().upper(), parts[1].strip(), params)
 
 def normalize_rule_smart(rtype, rval, rparams):
-    """标准规则输出格式化"""
     rval = rval.lower()
     if rtype in ("DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD"):
         return f"{rtype},{rval}"
@@ -80,10 +72,6 @@ def normalize_rule_smart(rtype, rval, rparams):
     return f"{rtype},{rval}"
 
 def get_trie_reason(val, trie):
-    """
-    【核心溯源逻辑】
-    在 Trie 树中通过倒序匹配寻找覆盖当前的具体父规则
-    """
     node = trie
     parts = val.split('.')[::-1]
     match_path = []
@@ -96,7 +84,6 @@ def get_trie_reason(val, trie):
     return None
 
 def dedup_engine(rules):
-    """深度精简引擎：保持原始去重逻辑，仅增强日志信息量"""
     stats = {'danger': 0, 'logic': 0, 'exact': 0}
     seen, unique_base, log_logic = set(), [], []
 
@@ -112,12 +99,12 @@ def dedup_engine(rules):
 
     key_rules, suf_raw, dom_raw, ip_raw, ip6_rules = [], [], [], [], []
 
-    # 2. 分类与危险防御
+    # 2. 危险判定与规则分类
     for rtype, rval, rparams in unique_base:
         raw_str = normalize_rule_smart(rtype, rval, rparams)
         if is_dangerous_rule(rval):
             stats['danger'] += 1
-            log_logic.append(f"[危险拦截] {raw_str:<45} # 全等命中基础后缀黑名单")
+            log_logic.append(f"[危险拦截] {raw_str:<45} # 命中 SLD 防护")
             continue
         if rtype == 'DOMAIN-KEYWORD': key_rules.append(raw_str)
         elif rtype == 'DOMAIN-SUFFIX': suf_raw.append((raw_str, rval))
@@ -143,7 +130,7 @@ def dedup_engine(rules):
             stats['logic'] += 1
             log_logic.append(f"[逻辑覆盖] {rule_str:<45} # 溯源: DOMAIN-SUFFIX,{reason}")
 
-    # 4. 精确域名被后缀覆盖判定
+    # 4. DOMAIN 被后缀涵盖判定
     final_dom = []
     for r_str, v in dom_raw:
         reason = get_trie_reason(v, trie)
@@ -152,7 +139,7 @@ def dedup_engine(rules):
             log_logic.append(f"[逻辑覆盖] {r_str:<45} # 溯源: DOMAIN-SUFFIX,{reason}")
         else: final_dom.append(r_str)
 
-    # 5. IP 网段嵌套覆盖判定
+    # 5. IP 网段覆盖判定 (大网段覆盖小网段)
     ip_raw.sort(key=lambda x: x[1].prefixlen)
     kept_ip_nets, final_ip = [], []
     for rule_str, net in ip_raw:
@@ -164,17 +151,24 @@ def dedup_engine(rules):
             final_ip.append(rule_str)
             kept_ip_nets.append(net)
 
-    # 6. 纯 IP 跨类规则判定 (DOMAIN 是否在 CIDR 中)
+    # 6. IP 覆盖纯 IP 域名规则 (重点日志加强区)
     final_dom_clean = []
     for r_str in final_dom:
         v = r_str.split(',')[1]
+        # 判断是否为纯 IPv4 格式
         if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', v):
             try:
                 ip_obj = ipaddress.IPv4Address(v)
-                parent_net = next((k for k in kept_ip_nets if ip_obj in k), None)
-                if parent_net:
+                # 显式比对所有已保留网段
+                covered_by = None
+                for k_net in kept_ip_nets:
+                    if ip_obj in k_net:
+                        covered_by = k_net
+                        break
+                
+                if covered_by:
                     stats['logic'] += 1
-                    log_logic.append(f"[逻辑覆盖] {r_str:<45} # 溯源: IP-CIDR,{parent_net}")
+                    log_logic.append(f"[逻辑覆盖] {r_str:<45} # 溯源: IP-CIDR,{covered_by}")
                     continue
             except: pass
         final_dom_clean.append(r_str)
@@ -183,7 +177,6 @@ def dedup_engine(rules):
     return res, stats, log_logic
 
 def format_source_stats(source_stats):
-    """构建数据源分析表"""
     max_name_len = max(len(s['name']) for s in source_stats)
     width = max(max_name_len, 10)
     lines = ["# " + "=" * (width + 25)]
@@ -195,13 +188,12 @@ def format_source_stats(source_stats):
     return lines
 
 def main():
-    log("🚀 启动自动化精简任务...", "INFO")
+    log("🚀 启动自动化精简任务 (IP 日志增强版)...", "INFO")
     session, all_rules, source_stats = create_session(), [], []
     total_start = time.time()
 
-    # 阶段一：源数据采集
     for idx, src in enumerate(RULE_SOURCES, 1):
-        log(f"[{idx}/{len(RULE_SOURCES)}] 正在拉取: {src['name']}")
+        log(f"[{idx}/{len(RULE_SOURCES)}] 同步: {src['name']}")
         try:
             resp = session.get(src['url'], timeout=20)
             resp.raise_for_status()
@@ -210,7 +202,6 @@ def main():
             for l in raw_lines:
                 l = l.strip()
                 if not l or any(l.startswith(x) for x in ('#', '!', '[')): continue
-                # 智能格式转换
                 if re.match(r'^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$', l): processed.append(f"IP-CIDR,{l}")
                 elif re.match(r'^(\d{1,3}\.){3}\d{1,3}$', l): processed.append(f"DOMAIN,{l}")
                 elif l.startswith('.'): processed.append(f"DOMAIN-SUFFIX,{l[1:]}")
@@ -219,39 +210,34 @@ def main():
             all_rules.extend(processed)
             source_stats.append({"name": src['name'], "raw": len(raw_lines), "valid": len(processed)})
         except Exception as e:
-            log(f"源同步异常: {src['name']} ({e})", "ERROR")
+            log(f"同步失败: {src['name']} ({e})", "ERROR")
 
-    # 阶段二：应用算法精简
-    log("正在分析去重逻辑并生成审计追踪...", "INFO")
+    log("正在执行精简算法与 IP 跨类审计...", "INFO")
     final_list, stats, log_logic = dedup_engine(all_rules)
     
-    # 结果分层排序
     prio = {'DOMAIN': 1, 'DOMAIN-SUFFIX': 2, 'DOMAIN-KEYWORD': 3, 'IP-CIDR': 4, 'IP-CIDR6': 5}
     final_list.sort(key=lambda x: (prio.get(x.split(',')[0], 99), x.lower()))
 
-    # 头部文件构建
     header = [
-        f"# Loon 刺客合集 (SLD 防护 & 审计溯源版)",
+        f"# Loon 刺客合集 (IP 日志增强版)",
         f"# 生成时间: {get_beijing_time()}",
         f"# 压缩分析: 逻辑去重 {stats['logic']} | 危险防御 {stats['danger']} | 物理重复 {stats['exact']}",
         f"# 订阅地址: {SUBSCRIBE_URL}",
     ]
     header.extend(format_source_stats(source_stats))
     
-    # 持久化规则文件
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         f.write('\n'.join(header) + '\n\n' + '\n'.join(final_list))
     
-    # 持久化溯源审计日志
     with open(REMOVED_LOG_FILE, 'w', encoding='utf-8') as f:
         f.write(f"# Loon 自动化审计追踪日志 - {get_beijing_time()}\n")
         f.write(f"# ----------------------------------------------------------\n")
-        f.write(f"# 逻辑过滤总数: {len(log_logic)} 条 (记录 A 被 B 覆盖的详细关系)\n")
-        f.write(f"# 物理物理重复: {stats['exact']} 条 (各源完全相同的冗余项)\n")
+        f.write(f"# 逻辑过滤总数: {len(log_logic)} 条\n")
+        f.write(f"# 包括：后缀包含关系溯源、IP网段覆盖溯源\n")
         f.write(f"# ----------------------------------------------------------\n\n")
         f.write('\n'.join(log_logic) if log_logic else "本次任务无逻辑重叠。")
 
-    log(f"✅ 处理圆满成功！最终规则数: {len(final_list)} 条", "OK")
+    log(f"✅ 处理完成！保留规则 {len(final_list)} 条", "OK")
 
 if __name__ == "__main__":
     main()
