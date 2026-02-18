@@ -279,7 +279,7 @@ def main():
 
     # 构建头部（新增类型统计）
     header = [
-        f"# Loon_AD刺客 (修复优化版 v3.7)",
+        f"# Loon_AD刺客",
         f"# 生成时间: {get_beijing_time()}",
         f"# 规则统计: {len(final_list)} 条",
         f"# 压缩优化: 剔除危险 {stats['danger']} | 逻辑重复 {stats['logic']} | 完全重复 {stats['exact']}",
