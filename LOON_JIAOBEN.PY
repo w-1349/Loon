@@ -20,9 +20,10 @@ RULE_SOURCES = [
 ]
 
 OUTPUT_FILE = "Loon_rules.txt"
+REMOVED_LOG_FILE = "loon_rules.log"  # 过滤明细日志
 SUBSCRIBE_URL = "https://ddcm1349.github.io/Loon/Loon_rules.txt"
 
-# 危险关键字/公共后缀黑名单（两步验证：Keyword查包含，Suffix查相等）
+# 危险关键字：防止误删基础域名后缀或关键基础设施
 INVALID_KEYWORDS = {
     'com', 'net', 'cn', 'org', 'io', 'co', 'tv', 'cc', 'app', 'dev',
     'com.cn', 'net.cn', 'org.cn', 'gov.cn', 'edu.cn', 'com.hk',
@@ -31,14 +32,17 @@ INVALID_KEYWORDS = {
 # ==========================================
 
 def get_beijing_time():
+    """获取当前的北京时间"""
     return (datetime.utcnow() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
 
 def log(msg, level="INFO"):
+    """美化控制台输出"""
     timestamp = get_beijing_time()
-    prefix = {"INFO": "ℹ️", "OK": "✅", "ERROR": "❌", "WARN": "⚠️", "DEBUG": "🔍"}.get(level, "•")
+    prefix = {"INFO": "ℹ️", "OK": "✅", "ERROR": "❌", "WARN": "⚠️"}.get(level, "•")
     print(f"[{timestamp}] {prefix} {msg}", flush=True)
 
 def create_session():
+    """配置带重试机制的 HTTP 请求会话"""
     session = requests.Session()
     retries = Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
     session.mount("http://", HTTPAdapter(max_retries=retries))
@@ -47,202 +51,176 @@ def create_session():
     return session
 
 def is_valid_domain(domain):
-    """修复：支持纯IP作为域名"""
-    if not domain or len(domain) > 253: 
-        return False
-    if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', domain):
-        return True
-    if not re.match(r'^[a-z0-9\-\.]+$', domain): 
-        return False
+    """验证域名是否合法（支持纯 IP 识别）"""
+    if not domain or len(domain) > 253: return False
+    if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', domain): return True
+    if not re.match(r'^[a-z0-9\-\.]+$', domain): return False
     labels = domain.split('.')
     return len(labels) >= 2 and not labels[-1].isdigit()
 
 def is_dangerous_keyword(rval):
-    """修复：精确的单词边界检测"""
+    """精确检测危险关键字，避免误伤子域名（如 api-ads.com 不应被拦截）"""
     rval = rval.lower()
     for k in INVALID_KEYWORDS:
-        if rval == k:
-            return True
+        if rval == k: return True
         if k in rval:
             idx = rval.find(k)
             before = rval[idx-1] if idx > 0 else ''
             after = rval[idx+len(k)] if idx+len(k) < len(rval) else ''
-            if (not before or not before.isalnum()) and \
-               (not after or not after.isalnum()):
+            if (not before or not before.isalnum()) and (not after or not after.isalnum()):
                 return True
     return False
 
 def parse_loon_rule(line):
-    """解析Loon规则，过滤空参数"""
+    """将 Loon 规则行解析为 (类型, 值, 参数列表)"""
     parts = line.split(',')
-    if len(parts) < 2: 
-        return None
+    if len(parts) < 2: return None
     params = [p.strip().lower() for p in parts[2:] if p.strip()]
     return (parts[0].strip().upper(), parts[1].strip(), params)
 
 def normalize_rule_smart(rtype, rval, rparams):
-    """
-    按用户需求：
-    - 域名类：剔除所有参数
-    - IP类：仅保留 no-resolve
-    """
+    """标准化输出：域名类剥离冗余参数，IP类保留 no-resolve"""
     rval = rval.lower()
     if rtype in ("DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD"):
         return f"{rtype},{rval}"
     if rtype in ("IP-CIDR", "IP-CIDR6"):
-        if "no-resolve" in rparams:
-            return f"{rtype},{rval},no-resolve"
-        return f"{rtype},{rval}"
+        return f"{rtype},{rval},no-resolve" if "no-resolve" in rparams else f"{rtype},{rval}"
     return f"{rtype},{rval}"
 
 def is_covered_by_trie(val, trie):
-    """高效字典树匹配"""
+    """
+    核心算法：通过后缀字典树(Trie)反向匹配。
+    逻辑：如果字典树中已存在 example.com，则 sub.example.com 会返回 True。
+    """
     node = trie
-    for part in val.split('.')[::-1]:
-        if part not in node: 
-            return False
+    for part in val.split('.')[::-1]: # 从顶级域名开始逐级往左查
+        if part not in node: return False
         node = node[part]
-        if "#" in node: 
-            return True
+        if "#" in node: return True # 命中终止符，说明已被父域涵盖
     return False
 
 def dedup_engine(rules):
-    """极致去重引擎"""
+    """极致去重引擎：处理完全重复、逻辑包含、危险拦截"""
     stats = {'danger': 0, 'logic': 0, 'exact': 0}
     seen = set()
     unique_base = []
-    
+    log_logic = [] # 记录有价值的逻辑过滤
+
+    # 1. 第一阶段：剔除完全相同的物理行
     for r in rules:
         p = parse_loon_rule(r)
-        if not p: 
-            continue
+        if not p: continue
         norm = normalize_rule_smart(*p)
         if norm not in seen:
             seen.add(norm)
             unique_base.append(p)
         else: 
-            stats['exact'] += 1
+            stats['exact'] += 1 # 完全重复不进详细日志，仅计数
 
     key_rules, suf_raw, dom_raw, ip_raw, ip6_rules = [], [], [], [], []
 
+    # 2. 第二阶段：分类与危险关键字过滤
     for rtype, rval, rparams in unique_base:
+        raw_str = normalize_rule_smart(rtype, rval, rparams)
         if rtype == 'DOMAIN-KEYWORD':
             if is_dangerous_keyword(rval):
                 stats['danger'] += 1
+                log_logic.append(f"[危险拦截] {raw_str} (命中关键字黑名单)")
                 continue
-            key_rules.append(f"{rtype},{rval}")
-            
+            key_rules.append(raw_str)
         elif rtype == 'DOMAIN-SUFFIX':
             if rval in INVALID_KEYWORDS:
                 stats['danger'] += 1
+                log_logic.append(f"[危险拦截] {raw_str} (禁止顶级域名后缀)")
                 continue
-            suf_raw.append((f"{rtype},{rval}", rval))
-            
+            suf_raw.append((raw_str, rval))
         elif rtype == 'DOMAIN':
-            dom_raw.append((f"{rtype},{rval}", rval))
-            
+            dom_raw.append((raw_str, rval))
         elif rtype == 'IP-CIDR':
             try:
                 net = ipaddress.IPv4Network(rval, strict=False)
-                ip_raw.append((normalize_rule_smart(rtype, rval, rparams), net))
-            except: 
-                continue
-                
+                ip_raw.append((raw_str, net))
+            except: continue
         elif rtype == 'IP-CIDR6':
-            ip6_rules.append(normalize_rule_smart(rtype, rval, rparams))
+            ip6_rules.append(raw_str)
 
-    # 域名去重
-    suf_raw.sort(key=lambda x: len(x[1].split('.')))
+    # 3. 第三阶段：域名后缀包含去重
+    # 
+    suf_raw.sort(key=lambda x: len(x[1].split('.'))) # 按域名长度排序，优先处理父域
     trie, final_suf = {}, []
     for rule_str, val in suf_raw:
         if not is_covered_by_trie(val, trie):
             final_suf.append(rule_str)
+            # 将新域名加入 Trie 树
             node = trie
-            for part in val.split('.')[::-1]: 
-                node = node.setdefault(part, {})
-            node["#"] = True
+            for part in val.split('.')[::-1]: node = node.setdefault(part, {})
+            node["#"] = True # 设置终止符
         else: 
             stats['logic'] += 1
+            log_logic.append(f"[逻辑覆盖] {rule_str:<40} # 已被上级后缀规则涵盖")
 
+    # 4. 第四阶段：精确域名包含去重
     final_dom = []
     for r, v in dom_raw:
         if is_covered_by_trie(v, trie): 
             stats['logic'] += 1
+            log_logic.append(f"[逻辑覆盖] {r:<40} # 已被后缀规则(DOMAIN-SUFFIX)涵盖")
         else: 
             final_dom.append(r)
 
-    # IP去重
-    ip_raw.sort(key=lambda x: x[1].prefixlen)
+    # 5. 第五阶段：IP CIDR 掩码包含去重 (大网段覆盖小网段)
+    ip_raw.sort(key=lambda x: x[1].prefixlen) # 按掩码长度排序，优先处理大网段
     kept_ip_nets, final_ip = [], []
     for rule_str, net in ip_raw:
-        if not any(k_net.supernet_of(net) for k_net in kept_ip_nets):
+        is_covered = False
+        for k_net in kept_ip_nets:
+            if k_net.supernet_of(net):
+                is_covered = True
+                log_logic.append(f"[逻辑覆盖] {rule_str:<40} # 已被大网段 {k_net} 涵盖")
+                break
+        if not is_covered:
             final_ip.append(rule_str)
             kept_ip_nets.append(net)
         else: 
             stats['logic'] += 1
 
-    # 跨类型去重
+    # 6. 第六阶段：跨类型去重 (检测域名中的 IP 是否在已有网段中)
     final_dom_clean = []
     for r_str in final_dom:
-        parts = r_str.split(',')
-        if len(parts) < 2:
-            final_dom_clean.append(r_str)
-            continue
-        v = parts[1]
-        if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', v):
+        v = r_str.split(',')[1]
+        if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', v): # 如果 DOMAIN 里的值是纯 IP
             try:
                 ip_obj = ipaddress.IPv4Address(v)
                 if any(ip_obj in k_net for k_net in kept_ip_nets):
                     stats['logic'] += 1
+                    log_logic.append(f"[逻辑覆盖] {r_str:<40} # 该 IP 已在网段规则中")
                     continue
-            except:
-                pass
+            except: pass
         final_dom_clean.append(r_str)
 
     res = final_dom_clean + final_suf + key_rules + final_ip + ip6_rules
-    return res, stats
+    return res, stats, log_logic
 
 def format_source_stats(source_stats):
-    """格式化源统计"""
+    """格式化生成源统计表"""
     max_name_len = max(len(s['name']) for s in source_stats)
     width = max(max_name_len, 10)
     lines = ["# " + "=" * (width + 25)]
-    lines.append(f"# {'名称':<{width}} {'原始':>8} {'提取':>8} {'丢弃':>8}")
+    lines.append(f"# {'名称':<{width}} {'原始规模':>8} {'提取条数':>8} {'无效过滤':>8}")
     lines.append("# " + "-" * (width + 25))
     for s in source_stats:
         lines.append(f"# {s['name']:<{width}} {s['raw']:>8} {s['valid']:>8} {s['raw']-s['valid']:>8}")
     lines.append("# " + "=" * (width + 25))
     return lines
 
-def format_type_stats(final_list):
-    """新增：统计各类型规则数量"""
-    type_count = {}
-    for rule in final_list:
-        rtype = rule.split(',')[0] if ',' in rule else 'UNKNOWN'
-        type_count[rtype] = type_count.get(rtype, 0) + 1
-    
-    # 按优先级排序
-    prio_order = ['DOMAIN', 'DOMAIN-SUFFIX', 'DOMAIN-KEYWORD', 'IP-CIDR', 'IP-CIDR6', 'UNKNOWN']
-    lines = ["# 类型分布统计:"]
-    total = len(final_list)
-    
-    for t in prio_order:
-        if t in type_count:
-            count = type_count[t]
-            pct = count / total * 100 if total > 0 else 0
-            lines.append(f"#   {t:<15} {count:>6} 条 ({pct:>5.1f}%)")
-    
-    lines.append("# " + "-" * 30)
-    lines.append(f"#   {'TOTAL':<15} {total:>6} 条")
-    return lines
-
 def main():
-    log("🚀 启动规则抓取任务...", "INFO")
+    log("🚀 启动 Loon 规则自动化任务...", "INFO")
     session, all_rules, source_stats = create_session(), [], []
     total_start = time.time()
 
+    # 1. 同步数据源
     for idx, src in enumerate(RULE_SOURCES, 1):
-        log(f"[{idx}/{len(RULE_SOURCES)}] 正在请求: {src['name']}")
+        log(f"[{idx}/{len(RULE_SOURCES)}] 正在拉取: {src['name']}")
         try:
             resp = session.get(src['url'], timeout=20)
             resp.raise_for_status()
@@ -250,49 +228,48 @@ def main():
             processed = []
             for l in raw_lines:
                 l = l.strip()
-                if not l or any(l.startswith(x) for x in ('#', '!', '[')): 
-                    continue
-                
-                if re.match(r'^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$', l): 
-                    processed.append(f"IP-CIDR,{l}")
-                elif re.match(r'^(\d{1,3}\.){3}\d{1,3}$', l): 
-                    processed.append(f"DOMAIN,{l}")
-                elif l.startswith('.'): 
-                    processed.append(f"DOMAIN-SUFFIX,{l[1:]}")
-                elif ',' not in l and is_valid_domain(l): 
-                    processed.append(f"DOMAIN,{l}")
-                else: 
-                    processed.append(l)
-
+                if not l or any(l.startswith(x) for x in ('#', '!', '[')): continue
+                # 规则预处理：将纯域名、纯网段自动转换为 Loon 格式
+                if re.match(r'^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$', l): processed.append(f"IP-CIDR,{l}")
+                elif re.match(r'^(\d{1,3}\.){3}\d{1,3}$', l): processed.append(f"DOMAIN,{l}")
+                elif l.startswith('.'): processed.append(f"DOMAIN-SUFFIX,{l[1:]}")
+                elif ',' not in l and is_valid_domain(l): processed.append(f"DOMAIN,{l}")
+                else: processed.append(l)
             all_rules.extend(processed)
             source_stats.append({"name": src['name'], "raw": len(raw_lines), "valid": len(processed)})
-            log(f"    完成: 提取 {len(processed)} 条", "OK")
         except Exception as e:
-            log(f"    失败: {src['name']} ({e})", "ERROR")
+            log(f"同步失败: {src['name']} ({e})", "ERROR")
 
-    log("清理冗余逻辑中...", "INFO")
-    final_list, stats = dedup_engine(all_rules)
+    # 2. 执行算法逻辑
+    log("正在分析域名字典树与 IP 碰撞逻辑...", "INFO")
+    final_list, stats, log_logic = dedup_engine(all_rules)
     
-    # 排序
+    # 3. 对最终结果进行排序，使生成的规则整洁美观
     prio = {'DOMAIN': 1, 'DOMAIN-SUFFIX': 2, 'DOMAIN-KEYWORD': 3, 'IP-CIDR': 4, 'IP-CIDR6': 5}
     final_list.sort(key=lambda x: (prio.get(x.split(',')[0], 99), x.lower()))
 
-    # 构建头部（新增类型统计）
+    # 4. 构建文件头部注释
     header = [
-        f"# Loon_AD刺客",
+        f"# Loon 刺客规则 (自动化版)",
         f"# 生成时间: {get_beijing_time()}",
-        f"# 规则统计: {len(final_list)} 条",
-        f"# 压缩优化: 剔除危险 {stats['danger']} | 逻辑重复 {stats['logic']} | 完全重复 {stats['exact']}",
+        f"# 压缩优化: 拦截危险 {stats['danger']} | 逻辑重复 {stats['logic']} | 跨源完全重复 {stats['exact']}",
         f"# 订阅地址: {SUBSCRIBE_URL}",
     ]
     header.extend(format_source_stats(source_stats))
-    # 新增：类型分布统计
-    header.extend(format_type_stats(final_list))
     
+    # 5. 持久化存储
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         f.write('\n'.join(header) + '\n\n' + '\n'.join(final_list))
     
-    log(f"任务完成！保存至 {OUTPUT_FILE}，总耗时 {time.time()-total_start:.1f}s", "OK")
+    # 6. 生成过滤日志（仅包含逻辑过滤，页尾显示完全重复数）
+    with open(REMOVED_LOG_FILE, 'w', encoding='utf-8') as f:
+        f.write(f"# Loon 过滤日志 - {get_beijing_time()}\n" + "="*80 + "\n")
+        f.write(f"# 逻辑过滤总数: {len(log_logic)} 条 (详情如下)\n")
+        f.write(f"# 完全重复总数: {stats['exact']} 条 (明细已省略)\n")
+        f.write("="*80 + "\n\n")
+        f.write('\n'.join(log_logic))
+    
+    log(f"✅ 任务成功！生成规则 {len(final_list)} 条 | 耗时 {time.time()-total_start:.1f}s", "OK")
 
 if __name__ == "__main__":
     main()
