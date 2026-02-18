@@ -20,7 +20,7 @@ RULE_SOURCES = [
 ]
 
 OUTPUT_FILE = "Loon_rules.txt"
-REMOVED_LOG_FILE = "loon_rules.log"  # 过滤明细日志
+REMOVED_LOG_FILE = "loon_removed_details.log"  # 过滤明细日志
 SUBSCRIBE_URL = "https://ddcm1349.github.io/Loon/Loon_rules.txt"
 
 # 危险关键字：防止误删基础域名后缀或关键基础设施
