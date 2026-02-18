@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: '49 5 * * *'   # 每天北京时间 13:49 运行
     - cron: '49 17 * * *'  # 每天北京时间 01:49 运行
-  workflow_dispatch:       # 支持手动运行
+  workflow_dispatch:       # 支持手动点击按钮运行
 
 permissions:
   contents: write
@@ -31,6 +31,9 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git add Loon_rules.txt
-          git commit -m "自动更新规则：$(date +'%Y-%m-%d %H:%M:%S' --date='+8 hour')" --allow-empty
+          # 精确指定需要提交的文件，防止污染仓库
+          git add Loon_rules.txt loon_removed_details.log
+          # 只有在文件有变动时才提交，--allow-empty 保证脚本不因无变动而报错
+          git commit -m "自动更新规则及日志：$(date +'%Y-%m-%d %H:%M:%S' --date='+8 hour')" --allow-empty
+          # 强制推送确保远程分支与本地处理结果一致
           git push origin main --force
