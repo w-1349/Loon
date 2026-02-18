@@ -20,7 +20,7 @@ RULE_SOURCES = [
 ]
 
 OUTPUT_FILE = "Loon_rules.txt"
-REMOVED_LOG_FILE = "loon_rules.log"
+REMOVED_LOG_FILE = "Loon_rules.log"
 SUBSCRIBE_URL = "https://ddcm1349.github.io/Loon/Loon_rules.txt"
 
 INVALID_KEYWORDS = {
