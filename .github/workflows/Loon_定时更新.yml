@@ -32,6 +32,6 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           # 精确添加：规则文件与审计日志
-          git add Loon_rules.txt loon_rules.log
+          git add Loon_rules.txt Loon_rules.log
           git commit -m "自动更新规则及日志：$(date +'%Y-%m-%d %H:%M:%S' --date='+8 hour')" --allow-empty
           git push origin main --force
