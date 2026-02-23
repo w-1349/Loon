@@ -1,7 +1,7 @@
-# Loon 自动化审计日志 - 2026-02-23 14:47:10
+# Loon 自动化审计日志 - 2026-02-24 02:40:49
 # ----------------------------------------------------------
-# 最终规则总数: 184570
-# 逻辑精简总数: 6039 (A 被 B 覆盖的溯源记录)
+# 最终规则总数: 185275
+# 逻辑精简总数: 6125 (A 被 B 覆盖的溯源记录)
 # ----------------------------------------------------------
 
 [逻辑覆盖] DOMAIN-SUFFIX,1.lishibu.com                   # 溯源: DOMAIN-SUFFIX,lishibu.com
@@ -406,7 +406,6 @@
 [逻辑覆盖] DOMAIN-SUFFIX,events.apester.com              # 溯源: DOMAIN-SUFFIX,apester.com
 [逻辑覆盖] DOMAIN-SUFFIX,events.shoplytics.com           # 溯源: DOMAIN-SUFFIX,shoplytics.com
 [逻辑覆盖] DOMAIN-SUFFIX,events.splash-screen.net        # 溯源: DOMAIN-SUFFIX,splash-screen.net
-[逻辑覆盖] DOMAIN-SUFFIX,exchange.nativeads.com          # 溯源: DOMAIN-SUFFIX,nativeads.com
 [逻辑覆盖] DOMAIN-SUFFIX,experience.comcastbiz.com       # 溯源: DOMAIN-SUFFIX,comcastbiz.com
 [逻辑覆盖] DOMAIN-SUFFIX,experience.contextly.com        # 溯源: DOMAIN-SUFFIX,contextly.com
 [逻辑覆盖] DOMAIN-SUFFIX,expertsender.branch.rocks       # 溯源: DOMAIN-SUFFIX,branch.rocks
@@ -614,7 +613,6 @@
 [逻辑覆盖] DOMAIN-SUFFIX,manntv.oewabox.at               # 溯源: DOMAIN-SUFFIX,oewabox.at
 [逻辑覆盖] DOMAIN-SUFFIX,marketing.socialbakers.com      # 溯源: DOMAIN-SUFFIX,socialbakers.com
 [逻辑覆盖] DOMAIN-SUFFIX,marketing.sojern.com            # 溯源: DOMAIN-SUFFIX,sojern.com
-[逻辑覆盖] DOMAIN-SUFFIX,marketing.wescam.info           # 溯源: DOMAIN-SUFFIX,wescam.info
 [逻辑覆盖] DOMAIN-SUFFIX,mastercenter.livejasmin.com     # 溯源: DOMAIN-SUFFIX,livejasmin.com
 [逻辑覆盖] DOMAIN-SUFFIX,mat.socy.es                     # 溯源: DOMAIN-SUFFIX,socy.es
 [逻辑覆盖] DOMAIN-SUFFIX,matomy.adk2.co                  # 溯源: DOMAIN-SUFFIX,adk2.co
@@ -628,7 +626,6 @@
 [逻辑覆盖] DOMAIN-SUFFIX,members.adoptim.com             # 溯源: DOMAIN-SUFFIX,adoptim.com
 [逻辑覆盖] DOMAIN-SUFFIX,meowlytics.bignutty.xyz         # 溯源: DOMAIN-SUFFIX,bignutty.xyz
 [逻辑覆盖] DOMAIN-SUFFIX,metric-api.newrelic.com         # 溯源: DOMAIN-SUFFIX,newrelic.com
-[逻辑覆盖] DOMAIN-SUFFIX,metrics.multiview.com           # 溯源: DOMAIN-SUFFIX,multiview.com
 [逻辑覆盖] DOMAIN-SUFFIX,metropol.oewabox.at             # 溯源: DOMAIN-SUFFIX,oewabox.at
 [逻辑覆盖] DOMAIN-SUFFIX,mg.dt00.net                     # 溯源: DOMAIN-SUFFIX,dt00.net
 [逻辑覆盖] DOMAIN-SUFFIX,mgntat.mno.link                 # 溯源: DOMAIN-SUFFIX,mno.link
@@ -753,8 +750,6 @@
 [逻辑覆盖] DOMAIN-SUFFIX,rt.rtoaster.jp                  # 溯源: DOMAIN-SUFFIX,rtoaster.jp
 [逻辑覆盖] DOMAIN-SUFFIX,rtb-apac.foremedia.net          # 溯源: DOMAIN-SUFFIX,foremedia.net
 [逻辑覆盖] DOMAIN-SUFFIX,rtb-eu-v4.revbid.net            # 溯源: DOMAIN-SUFFIX,revbid.net
-[逻辑覆盖] DOMAIN-SUFFIX,rtb-eu-v4.vistarsagency.com     # 溯源: DOMAIN-SUFFIX,vistarsagency.com
-[逻辑覆盖] DOMAIN-SUFFIX,rtb-eu.adventurefeeds.com       # 溯源: DOMAIN-SUFFIX,adventurefeeds.com
 [逻辑覆盖] DOMAIN-SUFFIX,rtb-eu.foremedia.net            # 溯源: DOMAIN-SUFFIX,foremedia.net
 [逻辑覆盖] DOMAIN-SUFFIX,rtb-eu.nativeads.com            # 溯源: DOMAIN-SUFFIX,nativeads.com
 [逻辑覆盖] DOMAIN-SUFFIX,rtb-eu.vistarsagency.com        # 溯源: DOMAIN-SUFFIX,vistarsagency.com
@@ -763,7 +758,6 @@
 [逻辑覆盖] DOMAIN-SUFFIX,rtb-useast-v4.vistarsagency.com # 溯源: DOMAIN-SUFFIX,vistarsagency.com
 [逻辑覆盖] DOMAIN-SUFFIX,rtb-useast.anyclip-media.com    # 溯源: DOMAIN-SUFFIX,anyclip-media.com
 [逻辑覆盖] DOMAIN-SUFFIX,rtb-useast.denakop.com          # 溯源: DOMAIN-SUFFIX,denakop.com
-[逻辑覆盖] DOMAIN-SUFFIX,rtb-useast.foremedia.net        # 溯源: DOMAIN-SUFFIX,foremedia.net
 [逻辑覆盖] DOMAIN-SUFFIX,rtb-uswest-v4.revbid.net        # 溯源: DOMAIN-SUFFIX,revbid.net
 [逻辑覆盖] DOMAIN-SUFFIX,rtb-uswest-v4.vistarsagency.com # 溯源: DOMAIN-SUFFIX,vistarsagency.com
 [逻辑覆盖] DOMAIN-SUFFIX,rtb-uswest.adventurefeeds.com   # 溯源: DOMAIN-SUFFIX,adventurefeeds.com
@@ -1047,7 +1041,6 @@
 [逻辑覆盖] DOMAIN-SUFFIX,secure.yeld9auto.com            # 溯源: DOMAIN-SUFFIX,yeld9auto.com
 [逻辑覆盖] DOMAIN-SUFFIX,secure.yirr5frog.com            # 溯源: DOMAIN-SUFFIX,yirr5frog.com
 [逻辑覆盖] DOMAIN-SUFFIX,seibli.oewabox.at               # 溯源: DOMAIN-SUFFIX,oewabox.at
-[逻辑覆盖] DOMAIN-SUFFIX,selfservice.adoptim.com         # 溯源: DOMAIN-SUFFIX,adoptim.com
 [逻辑覆盖] DOMAIN-SUFFIX,sendpulsenewtest.branch.rocks   # 溯源: DOMAIN-SUFFIX,branch.rocks
 [逻辑覆盖] DOMAIN-SUFFIX,sendpulsetest.branch.rocks      # 溯源: DOMAIN-SUFFIX,branch.rocks
 [逻辑覆盖] DOMAIN-SUFFIX,sephora-qa.branch.rocks         # 溯源: DOMAIN-SUFFIX,branch.rocks
@@ -1106,11 +1099,9 @@
 [逻辑覆盖] DOMAIN-SUFFIX,stat.mixi.media                 # 溯源: DOMAIN-SUFFIX,mixi.media
 [逻辑覆盖] DOMAIN-SUFFIX,stat.netmonitor.fi              # 溯源: DOMAIN-SUFFIX,netmonitor.fi
 [逻辑覆盖] DOMAIN-SUFFIX,stat.onemob.mobi                # 溯源: DOMAIN-SUFFIX,onemob.mobi
-[逻辑覆盖] DOMAIN-SUFFIX,static-analytics.nativeads.com  # 溯源: DOMAIN-SUFFIX,nativeads.com
 [逻辑覆盖] DOMAIN-SUFFIX,static-rtb2.foremedia.net       # 溯源: DOMAIN-SUFFIX,foremedia.net
 [逻辑覆盖] DOMAIN-SUFFIX,static.2mdn.net                 # 溯源: DOMAIN-SUFFIX,2mdn.net
 [逻辑覆盖] DOMAIN-SUFFIX,static.addtoany.com             # 溯源: DOMAIN-SUFFIX,addtoany.com
-[逻辑覆盖] DOMAIN-SUFFIX,static.anyclip-media.com        # 溯源: DOMAIN-SUFFIX,anyclip-media.com
 [逻辑覆盖] DOMAIN-SUFFIX,static.applixir.com             # 溯源: DOMAIN-SUFFIX,applixir.com
 [逻辑覆盖] DOMAIN-SUFFIX,static.audienceinsights.net     # 溯源: DOMAIN-SUFFIX,audienceinsights.net
 [逻辑覆盖] DOMAIN-SUFFIX,static.epeex.com                # 溯源: DOMAIN-SUFFIX,epeex.com
@@ -1119,7 +1110,6 @@
 [逻辑覆盖] DOMAIN-SUFFIX,static.leaddyno.com             # 溯源: DOMAIN-SUFFIX,leaddyno.com
 [逻辑覆盖] DOMAIN-SUFFIX,static.livejasmin.com           # 溯源: DOMAIN-SUFFIX,livejasmin.com
 [逻辑覆盖] DOMAIN-SUFFIX,static.mackeeper.com            # 溯源: DOMAIN-SUFFIX,mackeeper.com
-[逻辑覆盖] DOMAIN-SUFFIX,static.revbid.net               # 溯源: DOMAIN-SUFFIX,revbid.net
 [逻辑覆盖] DOMAIN-SUFFIX,static.runconverge.com          # 溯源: DOMAIN-SUFFIX,runconverge.com
 [逻辑覆盖] DOMAIN-SUFFIX,static.showcasead.com           # 溯源: DOMAIN-SUFFIX,showcasead.com
 [逻辑覆盖] DOMAIN-SUFFIX,static.site24x7rum.com          # 溯源: DOMAIN-SUFFIX,site24x7rum.com
@@ -1264,7 +1254,6 @@
 [逻辑覆盖] DOMAIN-SUFFIX,uu1.3gu.com                     # 溯源: DOMAIN-SUFFIX,3gu.com
 [逻辑覆盖] DOMAIN-SUFFIX,uwz.oewabox.at                  # 溯源: DOMAIN-SUFFIX,oewabox.at
 [逻辑覆盖] DOMAIN-SUFFIX,v2.adsbookie.com                # 溯源: DOMAIN-SUFFIX,adsbookie.com
-[逻辑覆盖] DOMAIN-SUFFIX,val.looksmart.com               # 溯源: DOMAIN-SUFFIX,looksmart.com
 [逻辑覆盖] DOMAIN-SUFFIX,valnet.sentinelpro.com          # 溯源: DOMAIN-SUFFIX,sentinelpro.com
 [逻辑覆盖] DOMAIN-SUFFIX,vcm.oewabox.at                  # 溯源: DOMAIN-SUFFIX,oewabox.at
 [逻辑覆盖] DOMAIN-SUFFIX,vendorlist.consensu.org         # 溯源: DOMAIN-SUFFIX,consensu.org
@@ -1296,7 +1285,6 @@
 [逻辑覆盖] DOMAIN-SUFFIX,wienerz.oewabox.at              # 溯源: DOMAIN-SUFFIX,oewabox.at
 [逻辑覆盖] DOMAIN-SUFFIX,wiengvat.oewabox.at             # 溯源: DOMAIN-SUFFIX,oewabox.at
 [逻辑覆盖] DOMAIN-SUFFIX,willhab.oewabox.at              # 溯源: DOMAIN-SUFFIX,oewabox.at
-[逻辑覆盖] DOMAIN-SUFFIX,win-dsp-west.nativeads.com      # 溯源: DOMAIN-SUFFIX,nativeads.com
 [逻辑覆盖] DOMAIN-SUFFIX,wirtvlg.oewabox.at              # 溯源: DOMAIN-SUFFIX,oewabox.at
 [逻辑覆盖] DOMAIN-SUFFIX,wix.consentik.com               # 溯源: DOMAIN-SUFFIX,consentik.com
 [逻辑覆盖] DOMAIN-SUFFIX,wkrd.tingyun.com                # 溯源: DOMAIN-SUFFIX,tingyun.com
@@ -1877,6 +1865,7 @@
 [逻辑覆盖] DOMAIN-SUFFIX,x.clearbit.com                  # 溯源: DOMAIN-SUFFIX,clearbit.com
 [逻辑覆盖] DOMAIN-SUFFIX,xj-landing.gdtimg.com           # 溯源: DOMAIN-SUFFIX,gdtimg.com
 [逻辑覆盖] DOMAIN-SUFFIX,xlog.hiido.com                  # 溯源: DOMAIN-SUFFIX,hiido.com
+[逻辑覆盖] DOMAIN-SUFFIX,xml.epeex.com                   # 溯源: DOMAIN-SUFFIX,epeex.com
 [逻辑覆盖] DOMAIN-SUFFIX,xml.foremedia.net               # 溯源: DOMAIN-SUFFIX,foremedia.net
 [逻辑覆盖] DOMAIN-SUFFIX,xml.showcasead.com              # 溯源: DOMAIN-SUFFIX,showcasead.com
 [逻辑覆盖] DOMAIN-SUFFIX,yesss-a1at.mno.link             # 溯源: DOMAIN-SUFFIX,mno.link
@@ -1963,6 +1952,7 @@
 [逻辑覆盖] DOMAIN-SUFFIX,cdn1.crispadvertising.com       # 溯源: DOMAIN-SUFFIX,crispadvertising.com
 [逻辑覆盖] DOMAIN-SUFFIX,cdn2.crispadvertising.com       # 溯源: DOMAIN-SUFFIX,crispadvertising.com
 [逻辑覆盖] DOMAIN-SUFFIX,pv.dakawm.cc                    # 溯源: DOMAIN-SUFFIX,dakawm.cc
+[逻辑覆盖] DOMAIN-SUFFIX,tracking.diginetica.net         # 溯源: DOMAIN-SUFFIX,diginetica.net
 [逻辑覆盖] DOMAIN-SUFFIX,t.douyaobuy.com                 # 溯源: DOMAIN-SUFFIX,douyaobuy.com
 [逻辑覆盖] DOMAIN-SUFFIX,tt.douyaobuy.com                # 溯源: DOMAIN-SUFFIX,douyaobuy.com
 [逻辑覆盖] DOMAIN-SUFFIX,ad.duapps.com                   # 溯源: DOMAIN-SUFFIX,duapps.com
@@ -5512,7 +5502,6 @@
 [逻辑覆盖] DOMAIN-SUFFIX,www.notice.t-mobile.com         # 溯源: DOMAIN-SUFFIX,notice.t-mobile.com
 [逻辑覆盖] DOMAIN-SUFFIX,www.on24-webinars.co.uk         # 溯源: DOMAIN-SUFFIX,on24-webinars.co.uk
 [逻辑覆盖] DOMAIN-SUFFIX,www.save.adp.ca                 # 溯源: DOMAIN-SUFFIX,save.adp.ca
-[逻辑覆盖] DOMAIN-SUFFIX,www.science.dunnhumby.com       # 溯源: DOMAIN-SUFFIX,science.dunnhumby.com
 [逻辑覆盖] DOMAIN-SUFFIX,www.send.hollandcasino.nl       # 溯源: DOMAIN-SUFFIX,send.hollandcasino.nl
 [逻辑覆盖] DOMAIN-SUFFIX,www.service.cz.nl               # 溯源: DOMAIN-SUFFIX,service.cz.nl
 [逻辑覆盖] DOMAIN-SUFFIX,www.service.hollandcasino.nl    # 溯源: DOMAIN-SUFFIX,service.hollandcasino.nl
@@ -5864,6 +5853,7 @@
 [逻辑覆盖] DOMAIN-SUFFIX,valp.atm.youku.com              # 溯源: DOMAIN-SUFFIX,atm.youku.com
 [逻辑覆盖] DOMAIN-SUFFIX,valt.atm.youku.com              # 溯源: DOMAIN-SUFFIX,atm.youku.com
 [逻辑覆盖] DOMAIN-SUFFIX,valo.atm.youku.com              # 溯源: DOMAIN-SUFFIX,atm.youku.com
+[逻辑覆盖] DOMAIN-SUFFIX,69-74.net.jumia.sn              # 溯源: DOMAIN-SUFFIX,net.jumia.sn
 [逻辑覆盖] DOMAIN-SUFFIX,771fnypadw0j.pt.themoneytizer.com # 溯源: DOMAIN-SUFFIX,themoneytizer.com
 [逻辑覆盖] DOMAIN-SUFFIX,9b5gjkrnw71r.it.themoneytizer.com # 溯源: DOMAIN-SUFFIX,themoneytizer.com
 [逻辑覆盖] DOMAIN-SUFFIX,9uim1pc4ej4n.ru.themoneytizer.com # 溯源: DOMAIN-SUFFIX,themoneytizer.com
@@ -5884,6 +5874,7 @@
 [逻辑覆盖] DOMAIN-SUFFIX,jagransolutions.com.actonservice.com # 溯源: DOMAIN-SUFFIX,actonservice.com
 [逻辑覆盖] DOMAIN-SUFFIX,p.aty.sohu.com                  # 溯源: DOMAIN-SUFFIX,aty.sohu.com
 [逻辑覆盖] DOMAIN-SUFFIX,permission.au.actonservice.com  # 溯源: DOMAIN-SUFFIX,actonservice.com
+[逻辑覆盖] DOMAIN-SUFFIX,s010.net.jumia.sn               # 溯源: DOMAIN-SUFFIX,net.jumia.sn
 [逻辑覆盖] DOMAIN-SUFFIX,t.adx.opera.com                 # 溯源: DOMAIN-SUFFIX,adx.opera.com
 [逻辑覆盖] DOMAIN-SUFFIX,telemetry-eastus.trafficmanager.inmobi.com # 溯源: DOMAIN-SUFFIX,inmobi.com
 [逻辑覆盖] DOMAIN-SUFFIX,telemetry.sdk.inmobi.com        # 溯源: DOMAIN-SUFFIX,inmobi.com
@@ -5892,6 +5883,7 @@
 [逻辑覆盖] DOMAIN-SUFFIX,www.consulting.ramboll.com      # 溯源: DOMAIN-SUFFIX,consulting.ramboll.com
 [逻辑覆盖] DOMAIN-SUFFIX,www.myfiltration.eaton.com      # 溯源: DOMAIN-SUFFIX,myfiltration.eaton.com
 [逻辑覆盖] DOMAIN-SUFFIX,www.myvehicle.eaton.com         # 溯源: DOMAIN-SUFFIX,myvehicle.eaton.com
+[逻辑覆盖] DOMAIN-SUFFIX,www.science.dunnhumby.com       # 溯源: DOMAIN-SUFFIX,science.dunnhumby.com
 [逻辑覆盖] DOMAIN-SUFFIX,ysrrzgku6tar.us.themoneytizer.com # 溯源: DOMAIN-SUFFIX,themoneytizer.com
 [逻辑覆盖] DOMAIN-SUFFIX,ads10.console.adtarget.com.tr   # 溯源: DOMAIN-SUFFIX,adtarget.com.tr
 [逻辑覆盖] DOMAIN-SUFFIX,ads106.console.adtarget.com.tr  # 溯源: DOMAIN-SUFFIX,adtarget.com.tr
@@ -5992,7 +5984,6 @@
 [逻辑覆盖] DOMAIN-SUFFIX,umwatson.events.data.microsoft.com # 溯源: DOMAIN-SUFFIX,events.data.microsoft.com
 [逻辑覆盖] DOMAIN-SUFFIX,umwatsonc.events.data.microsoft.com # 溯源: DOMAIN-SUFFIX,events.data.microsoft.com
 [逻辑覆盖] DOMAIN-SUFFIX,v10c.events.data.microsoft.com  # 溯源: DOMAIN-SUFFIX,events.data.microsoft.com
-[逻辑覆盖] DOMAIN-SUFFIX,www.clients.net.anwalt.de       # 溯源: DOMAIN-SUFFIX,clients.net.anwalt.de
 [逻辑覆盖] DOMAIN-SUFFIX,www.connect.api.almirall.com    # 溯源: DOMAIN-SUFFIX,connect.api.almirall.com
 [逻辑覆盖] DOMAIN-SUFFIX,www.connect.johndorys.co.za     # 溯源: DOMAIN-SUFFIX,connect.johndorys.co.za
 [逻辑覆盖] DOMAIN-SUFFIX,www.connect.panarottis.co.za    # 溯源: DOMAIN-SUFFIX,connect.panarottis.co.za
@@ -6022,11 +6013,106 @@
 [逻辑覆盖] DOMAIN-SUFFIX,motu.p4p.sina.com.cn            # 溯源: DOMAIN-SUFFIX,p4p.sina.com.cn
 [逻辑覆盖] DOMAIN-SUFFIX,bidder.mediams.mb.softbank.jp   # 溯源: DOMAIN-SUFFIX,mediams.mb.softbank.jp
 [逻辑覆盖] DOMAIN-SUFFIX,app.m1.adsolutions.yp.com       # 溯源: DOMAIN-SUFFIX,adsolutions.yp.com
-[逻辑覆盖] DOMAIN-SUFFIX,www.brillen.demarketing.net.brillen.pl # 溯源: DOMAIN-SUFFIX,brillen.demarketing.net.brillen.pl
+[逻辑覆盖] DOMAIN-SUFFIX,www.clients.net.anwalt.de       # 溯源: DOMAIN-SUFFIX,clients.net.anwalt.de
+[逻辑覆盖] DOMAIN-SUFFIX,www.restopascher.net.jumia.sn   # 溯源: DOMAIN-SUFFIX,net.jumia.sn
 [逻辑覆盖] DOMAIN-SUFFIX,www.ciscenje.net.jumia.com.ng   # 溯源: DOMAIN-SUFFIX,ciscenje.net.jumia.com.ng
 [逻辑覆盖] DOMAIN-SUFFIX,www.secure.rc-club.ricoh.co.jp  # 溯源: DOMAIN-SUFFIX,secure.rc-club.ricoh.co.jp
 [逻辑覆盖] DOMAIN-SUFFIX,omahasteaks.com.102.122.207.net # 溯源: DOMAIN-SUFFIX,207.net
+[逻辑覆盖] DOMAIN-SUFFIX,external-bos5-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,instagram.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,scontent-atl3-2.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,scontent-cdg4-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,scontent-cdg4-2.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,scontent.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-akl1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-ams2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-arn2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-atl3-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-bcn1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-bkk1-2.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-bog2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-bom1-2.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-bru2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-ccu1-2.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-cdg4-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-cdg4-2.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-cdg4-3.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-cgk1-3.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-cph2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-cpt1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-del2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-den4-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-dfw5-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-dfw5-2.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-doh1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-dub4-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-eze1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-fco2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-fml20-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-for1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-fra3-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-fra3-2.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-fra5-2.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-gig4-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-gmp1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-gru2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-gua1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-ham3-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-hel3-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-hkt1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-hou1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-hyd1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-ist1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-itm1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-jnb1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-kul2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-lax3-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-lga3-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-lhr6-2.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-lim1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-lis1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-los2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-maa2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-mad1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-mba1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-mct1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-mrs2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-mty2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-mxp1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-nrt1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-ord5-2.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-pmo1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-qro1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-scl2-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-sea1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-sin6-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-sjc3-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-sof1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-ssn1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-tir3-2.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-tpe1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-vie1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-xsp1-3.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-xxb1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6-yyz1-1.xx.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.xy.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
 [逻辑覆盖] DOMAIN-SUFFIX,api.tw06.xlmc.sec.miui.com      # 溯源: DOMAIN-SUFFIX,xlmc.sec.miui.com
+[逻辑覆盖] DOMAIN-SUFFIX,www.brillen.demarketing.net.brillen.pl # 溯源: DOMAIN-SUFFIX,brillen.demarketing.net.brillen.pl
+[逻辑覆盖] DOMAIN-SUFFIX,external.fpbc1-1.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,scontent.fpbc1-2.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.fcul1-1.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.fgdl1-3.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.fgdl1-4.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.fgym1-1.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.fhmo1-2.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.fmlm1-1.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.fmzt1-1.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.fnog1-1.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.fntr4-1.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.fpbc1-1.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.fpbc1-2.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.fver1-1.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
+[逻辑覆盖] DOMAIN-SUFFIX,sonar6.fzih1-1.fna.fbcdn.net.iberostar.com # 溯源: DOMAIN-SUFFIX,fbcdn.net.iberostar.com
 [逻辑覆盖] DOMAIN,hmma.baidu.com                         # 溯源: DOMAIN-SUFFIX,hmma.baidu.com
 [逻辑覆盖] DOMAIN,js.users.51.la                         # 溯源: DOMAIN-SUFFIX,51.la
 [逻辑覆盖] DOMAIN,mc.51.la                               # 溯源: DOMAIN-SUFFIX,51.la
