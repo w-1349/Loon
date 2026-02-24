@@ -1,7 +1,7 @@
-# Loon 自动化审计日志 - 2026-02-24 14:42:04
+# Loon 自动化审计日志 - 2026-02-25 02:38:28
 # ----------------------------------------------------------
-# 最终规则总数: 185421
-# 逻辑精简总数: 6125 (A 被 B 覆盖的溯源记录)
+# 最终规则总数: 185555
+# 逻辑精简总数: 6123 (A 被 B 覆盖的溯源记录)
 # ----------------------------------------------------------
 
 [逻辑覆盖] DOMAIN-SUFFIX,1.lishibu.com                   # 溯源: DOMAIN-SUFFIX,lishibu.com
@@ -5470,7 +5470,6 @@
 [逻辑覆盖] DOMAIN-SUFFIX,traffic.prod.cobaltgroup.com    # 溯源: DOMAIN-SUFFIX,cobaltgroup.com
 [逻辑覆盖] DOMAIN-SUFFIX,trk.cf.labanquepostale.fr       # 溯源: DOMAIN-SUFFIX,cf.labanquepostale.fr
 [逻辑覆盖] DOMAIN-SUFFIX,uat.enterprises.proximus.com    # 溯源: DOMAIN-SUFFIX,enterprises.proximus.com
-[逻辑覆盖] DOMAIN-SUFFIX,uct.service.usercentrics.eu     # 溯源: DOMAIN-SUFFIX,usercentrics.eu
 [逻辑覆盖] DOMAIN-SUFFIX,url6013.qa-app11-sendgrid.branch.rocks # 溯源: DOMAIN-SUFFIX,branch.rocks
 [逻辑覆盖] DOMAIN-SUFFIX,url6035.clay-sendgrid-test.branch.rocks # 溯源: DOMAIN-SUFFIX,branch.rocks
 [逻辑覆盖] DOMAIN-SUFFIX,url8258.jshek.branch.rocks      # 溯源: DOMAIN-SUFFIX,branch.rocks
@@ -5971,7 +5970,6 @@
 [逻辑覆盖] DOMAIN-SUFFIX,gadgets.fosfor.se.intellitxt.com # 溯源: DOMAIN-SUFFIX,intellitxt.com
 [逻辑覆盖] DOMAIN-SUFFIX,ghb.console.adtarget.com.tr     # 溯源: DOMAIN-SUFFIX,adtarget.com.tr
 [逻辑覆盖] DOMAIN-SUFFIX,gw5.push.mcp.weibo.cn           # 溯源: DOMAIN-SUFFIX,push.mcp.weibo.cn
-[逻辑覆盖] DOMAIN-SUFFIX,img.sct.eu1.usercentrics.eu     # 溯源: DOMAIN-SUFFIX,usercentrics.eu
 [逻辑覆盖] DOMAIN-SUFFIX,kmwatson.events.data.microsoft.com # 溯源: DOMAIN-SUFFIX,events.data.microsoft.com
 [逻辑覆盖] DOMAIN-SUFFIX,kmwatsonc.events.data.microsoft.com # 溯源: DOMAIN-SUFFIX,events.data.microsoft.com
 [逻辑覆盖] DOMAIN-SUFFIX,logs.chatboost-cv.algoage.co.jp # 溯源: DOMAIN-SUFFIX,chatboost-cv.algoage.co.jp
