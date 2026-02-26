@@ -1,7 +1,7 @@
-# Loon 自动化审计日志 - 2026-02-26 02:41:59
+# Loon 自动化审计日志 - 2026-02-26 14:41:16
 # ----------------------------------------------------------
-# 最终规则总数: 185763
-# 逻辑精简总数: 6123 (A 被 B 覆盖的溯源记录)
+# 最终规则总数: 185871
+# 逻辑精简总数: 6124 (A 被 B 覆盖的溯源记录)
 # ----------------------------------------------------------
 
 [逻辑覆盖] DOMAIN-SUFFIX,1.lishibu.com                   # 溯源: DOMAIN-SUFFIX,lishibu.com
@@ -768,6 +768,7 @@
 [逻辑覆盖] DOMAIN-SUFFIX,rtb.optidigital.com             # 溯源: DOMAIN-SUFFIX,optidigital.com
 [逻辑覆盖] DOMAIN-SUFFIX,rtb2-useast.foremedia.net       # 溯源: DOMAIN-SUFFIX,foremedia.net
 [逻辑覆盖] DOMAIN-SUFFIX,rte.fuoo1.top                   # 溯源: DOMAIN-SUFFIX,fuoo1.top
+[逻辑覆盖] DOMAIN-SUFFIX,rtg.rubiconredirect.com         # 溯源: DOMAIN-SUFFIX,rubiconredirect.com
 [逻辑覆盖] DOMAIN-SUFFIX,rtl.oewabox.at                  # 溯源: DOMAIN-SUFFIX,oewabox.at
 [逻辑覆盖] DOMAIN-SUFFIX,rubylife.go2cloud.org           # 溯源: DOMAIN-SUFFIX,go2cloud.org
 [逻辑覆盖] DOMAIN-SUFFIX,s.adsession.com                 # 溯源: DOMAIN-SUFFIX,adsession.com
