@@ -1,7 +1,7 @@
-# Loon 自动化审计日志 - 2026-02-27 14:35:05
+# Loon 自动化审计日志 - 2026-02-28 02:20:15
 # ----------------------------------------------------------
-# 最终规则总数: 186107
-# 逻辑精简总数: 6124 (A 被 B 覆盖的溯源记录)
+# 最终规则总数: 186260
+# 逻辑精简总数: 6125 (A 被 B 覆盖的溯源记录)
 # ----------------------------------------------------------
 
 [逻辑覆盖] DOMAIN-SUFFIX,1.lishibu.com                   # 溯源: DOMAIN-SUFFIX,lishibu.com
@@ -1948,6 +1948,7 @@
 [逻辑覆盖] DOMAIN-SUFFIX,discover.conversantmedia.com    # 溯源: DOMAIN-SUFFIX,conversantmedia.com
 [逻辑覆盖] DOMAIN-SUFFIX,gw.conversionsapigateway.com    # 溯源: DOMAIN-SUFFIX,conversionsapigateway.com
 [逻辑覆盖] DOMAIN-SUFFIX,app.convertful.com              # 溯源: DOMAIN-SUFFIX,convertful.com
+[逻辑覆盖] DOMAIN-SUFFIX,tp.convertiser.com              # 溯源: DOMAIN-SUFFIX,convertiser.com
 [逻辑覆盖] DOMAIN-SUFFIX,browser.covatic.io              # 溯源: DOMAIN-SUFFIX,covatic.io
 [逻辑覆盖] DOMAIN-SUFFIX,p.cquotient.com                 # 溯源: DOMAIN-SUFFIX,cquotient.com
 [逻辑覆盖] DOMAIN-SUFFIX,cdn1.crispadvertising.com       # 溯源: DOMAIN-SUFFIX,crispadvertising.com
