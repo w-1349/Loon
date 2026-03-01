@@ -1,7 +1,7 @@
-# Loon 自动化审计日志 - 2026-03-01 01:54:02
+# Loon 自动化审计日志 - 2026-03-01 14:29:27
 # ----------------------------------------------------------
-# 最终规则总数: 186541
-# 逻辑精简总数: 6125 (A 被 B 覆盖的溯源记录)
+# 最终规则总数: 186629
+# 逻辑精简总数: 6126 (A 被 B 覆盖的溯源记录)
 # ----------------------------------------------------------
 
 [逻辑覆盖] DOMAIN-SUFFIX,1.lishibu.com                   # 溯源: DOMAIN-SUFFIX,lishibu.com
@@ -2037,6 +2037,7 @@
 [逻辑覆盖] DOMAIN-SUFFIX,container.pepperjam.com         # 溯源: DOMAIN-SUFFIX,pepperjam.com
 [逻辑覆盖] DOMAIN-SUFFIX,nojscontainer.pepperjam.com     # 溯源: DOMAIN-SUFFIX,pepperjam.com
 [逻辑覆盖] DOMAIN-SUFFIX,client.perimeterx.net           # 溯源: DOMAIN-SUFFIX,perimeterx.net
+[逻辑覆盖] DOMAIN-SUFFIX,fst-ec.perimeterx.net           # 溯源: DOMAIN-SUFFIX,perimeterx.net
 [逻辑覆盖] DOMAIN-SUFFIX,query1.petametrics.com          # 溯源: DOMAIN-SUFFIX,petametrics.com
 [逻辑覆盖] DOMAIN-SUFFIX,s3.phluant.com                  # 溯源: DOMAIN-SUFFIX,phluant.com
 [逻辑覆盖] DOMAIN-SUFFIX,cdn.polarbyte.com               # 溯源: DOMAIN-SUFFIX,polarbyte.com
